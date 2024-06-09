@@ -4,7 +4,12 @@ import { SafeAreaView, StyleSheet, View } from 'react-native';
 import AppMenu from './AppMenu';
 import colors from '../config/colors';
 
-function AppScreen( { children, fullscreen=false, style } ) {
+function AppScreen({ 
+    children, 
+    fullscreen=false, 
+    options=[],
+    style 
+}) {
     return (
         <View style={styles.wrapper}>
             {/* fullscreen not desired */}
@@ -24,7 +29,7 @@ function AppScreen( { children, fullscreen=false, style } ) {
             }
 
             {/* load app menu */}
-            <AppMenu/>
+            <AppMenu options={options}/>
         </View>
     );
 }

@@ -5,6 +5,10 @@ import * as Font from "expo-font";
 import AppText from '../components/AppText'
 import AppScreen from '../components/AppScreen';
 import fonts from '../config/fonts';
+import HomeScreen from './HomeScreen';
+import AppColorPicker from '../components/AppColorPicker';
+import Pups from '../config/pups';
+import PupScreen from './PupScreen';
 
 function index() {
     const [isReady, setIsReady] = useState(false);
@@ -27,13 +31,7 @@ function index() {
     }
 
     return (
-        <AppScreen>
-            <AppText weight={100}>"hello" </AppText>
-             <AppText weight={200}>"hello" </AppText>
-             <AppText weight={300}>"hello" </AppText>
-             <AppText weight={400}>"hello" </AppText>
-             <AppText weight={500}>"hello" </AppText>
-        </AppScreen>
+        <PupScreen />
     );
 }
 

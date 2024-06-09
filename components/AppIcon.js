@@ -7,24 +7,26 @@ import colors from '../config/colors';
 function AppIcon({
     backgroundColor = colors.light,
     borderColor,
+    borderWidth,
     color = colors.shade,
     icon = "paw",
     imageUri,
     onPress,
+    touchable = true,
     padding = true,
     size = 50,
     style
 }) {
 
-    return (
-        <TouchableWithoutFeedback onPress={onPress}>
+    const configureContent = () => {
+        return (
             <View style={[
                 styles.border,
                 {
                     // border only shows if borderColor is a declared property. 
                     borderColor: borderColor ? borderColor : backgroundColor,
                     borderRadius: 0.5 * size,
-                    borderWidth: borderColor ? size * 0.045 : 0,
+                    borderWidth: borderColor ? (borderWidth ? borderWidth : size * 0.045) : 0,
                     height: size,
                     padding: padding ? (borderColor ? size * 0.045 : 0) : 0,
                     width: size,
@@ -43,7 +45,14 @@ function AppIcon({
                     />}
                 </View>
             </View>
-        </TouchableWithoutFeedback>
+        );
+    };
+
+    return (
+        <>
+            {touchable && <TouchableWithoutFeedback onPress={onPress}>{ configureContent() }</TouchableWithoutFeedback>}
+            {!touchable && <View>{ configureContent() }</View>}
+        </>
     );
 }
 

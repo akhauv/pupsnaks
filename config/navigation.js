@@ -2,17 +2,17 @@ import colors from "./colors";
 
 export default {
     camera: {
-        name: "camScreen",
+        key: "camScreen",
         icon: "camera",
         color: colors.secondary
     },
     home: {
-        name: "homeScreen",
+        key: "homeScreen",
         icon: "home",
         color: colors.tertiary
     },
     search: {
-        name: "searchScreen",
+        key: "searchScreen",
         icon: "magnify",
         color: colors.shadow
     }

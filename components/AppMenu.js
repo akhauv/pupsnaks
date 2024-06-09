@@ -14,11 +14,10 @@ function AppMenu({ options=[] }) {
     // CHANGE LATER!
     /*
     The passed options array should ideally contain the following fields: 
-        - name
+        - key
         - imageUri / icon
         - borderColor
     */
-    options = [navigation.home, navigation.camera, navigation.search];
 
     return (
         <View style={styles.menuBar}>
@@ -37,7 +36,7 @@ function AppMenu({ options=[] }) {
                         borderColor={option.color}
                         icon={option.icon}
                         imageUri={option.imageUri}
-                        key={option.name}
+                        key={option.key}
                         size={iconSize}
                         style={styles.menuIcon}
                     />

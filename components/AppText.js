@@ -20,7 +20,7 @@ function getFontFamily(weight) {
     }
 }
 
-function AppText({ style, weight = 200, children, ...otherProps }) {
+function AppText({ style, weight, children, ...otherProps }) {
     return (
         <Text 
             style={[styles.text, {fontFamily: getFontFamily(weight)}, style]}
