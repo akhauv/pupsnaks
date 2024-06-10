@@ -1,10 +1,10 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 
-import AppMenu from './AppMenu';
+import Menu from './Menu';
 import colors from '../config/colors';
 
-function AppScreen({ 
+function Screen({ 
     children, 
     fullscreen=false, 
     options=[],
@@ -29,7 +29,7 @@ function AppScreen({
             }
 
             {/* load app menu */}
-            <AppMenu options={options}/>
+            <Menu options={options}/>
         </View>
     );
 }
@@ -45,4 +45,4 @@ const styles = StyleSheet.create({
 })
 
 
-export default AppScreen;
+export default Screen;

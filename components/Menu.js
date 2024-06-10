@@ -3,14 +3,14 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import navigation from '../config/navigation';
 import colors from '../config/colors';
-import AppIcon from './AppIcon';
+import Icon from './Icon';
 
 // size constants
 const iconSize = 92;
 const marginSize = 4;
 const cubbySize = iconSize + 2 * marginSize;
 
-function AppMenu({ options=[] }) {
+function Menu({ options=[] }) {
     // CHANGE LATER!
     /*
     The passed options array should ideally contain the following fields: 
@@ -32,7 +32,7 @@ function AppMenu({ options=[] }) {
             >
                 {/* each element in the passed options array gets an icon */}
                 {options.map(option =>
-                    <AppIcon
+                    <Icon
                         borderColor={option.color}
                         icon={option.icon}
                         imageUri={option.imageUri}
@@ -68,4 +68,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default AppMenu;
+export default Menu;

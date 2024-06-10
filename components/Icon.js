@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 import colors from '../config/colors';
 
-function AppIcon({
+function Icon({
     backgroundColor = colors.light,
     borderColor,
     borderWidth,
@@ -74,4 +74,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default AppIcon;
+export default Icon;

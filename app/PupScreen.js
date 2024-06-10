@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import AppScreen from '../components/AppScreen';
+import Screen from '../components/Screen';
 import navigation from '../config/navigation';
 import pups from '../config/pups';
 import colors from '../config/colors';
-import AppIcon from '../components/AppIcon';
+import Icon from '../components/Icon';
 import AppText from '../components/AppText';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ReactNativeModal from 'react-native-modal';
@@ -59,7 +59,7 @@ function PupScreen(key) {
     };
 
     return (
-        <AppScreen options={[navigation.home, ...pupArray]}>
+        <Screen options={[navigation.home, ...pupArray]}>
             {/* colors modal */}
             <ReactNativeModal animationIn={"fadeInUp"} animationOut={"fadeOutDown"} isVisible={colorModalVsisible}>
                 { renderColorModal() }
@@ -67,7 +67,7 @@ function PupScreen(key) {
 
             {/* header */}
             <View style={styles.header}>
-                <AppIcon
+                <Icon
                     borderColor={pup.color}
                     borderWidth={5}
                     imageUri={pup.imageUri}
@@ -122,7 +122,7 @@ function PupScreen(key) {
 
             <DraggableFlatList
             />
-        </AppScreen>
+        </Screen>
     );
 }
 
