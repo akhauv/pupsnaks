@@ -6,7 +6,7 @@ import colors from '../config/colors';
 import AppText from './AppText';
 
 function AppColorPicker({ 
-    exportColor,
+    handleChange,
     initialColor = colors.tertiary,
     size = 150
 }) {
@@ -20,7 +20,7 @@ function AppColorPicker({
                 justifyContent='center'
                 value={initialColor}
                 onChange={color => setColor(color.hex)}
-                onComplete={color => exportColor(color.hex)}
+                onComplete={color => handleChange(color.hex)}
             >
                 <HueCircular 
                     thumbShape={"hollow"}

@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import ReactNativeModal from 'react-native-modal';
+import * as ImagePicker from 'expo-image-picker'
+import DraggableFlatList from 'react-native-draggable-flatlist';
+import SwipeableFlatList from 'react-native-swipeable-list';
+import * as Yup from 'yup';
+import { Formik } from 'formik';
 
 import Screen from '../components/Screen';
 import navigation from '../config/navigation';
@@ -7,10 +14,14 @@ import pups from '../config/pups';
 import colors from '../config/colors';
 import Icon from '../components/Icon';
 import AppText from '../components/AppText';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import ReactNativeModal from 'react-native-modal';
 import AppColorPicker from '../components/AppColorPicker';
-import DraggableFlatList from 'react-native-draggable-flatlist';
+import AppForm from '../components/AppForm';
+import SubmitButton from '../components/SubmitButton';
+import FormField from '../components/FormField';
+
+const validationSchema = Yup.object().shape({
+    name: Yup.string().required().min(1).label("Name")
+});
 
 pupArray=[pups[1], pups[2], pups[3]];
 const headerHeight = 140;
@@ -20,7 +31,10 @@ function PupScreen(key) {
     key=1;
     const [pup, setPup] = useState(pups[key]);
     const [color, setColor] = useState(pup.color);
+    const [imageUri, setImageUri] = useState(pup.imageUri);
     const [colorModalVsisible, setColorModalVisible] = useState(false);
+    const [pictureModalVisible, setPictureModalVisible] = useState(false); 
+    const [nameModalVisible, setNameModalVisible] = useState(false);
 
     pupArray = pupArray.filter(pup => pup.key != key);
 
@@ -30,7 +44,7 @@ function PupScreen(key) {
                 <View style={styles.modal}>
                     <AppColorPicker 
                         initialColor={pup.color}
-                        exportColor={(newColor) => setColor(newColor)}
+                        handleChange={(newColor) => setColor(newColor)}
                     />
                     <View style={styles.modalRow}>
                         <TouchableOpacity 
@@ -50,7 +64,7 @@ function PupScreen(key) {
                                 setColorModalVisible(false);
                             }}
                         >
-                            <MaterialCommunityIcons color={colors.secondary} name="plus" size={30}/>
+                            <MaterialCommunityIcons color={colors.secondary} name="close" size={30}/>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -58,11 +72,115 @@ function PupScreen(key) {
         );
     };
 
+    const renderNameModal = () => {
+        return (
+            <View style={styles.modalWrapper}>
+                <View style={styles.modal}>
+                    <AppForm
+                        initialValues={{name: ""}}
+                        onSubmit={values => {
+                            pup.name = values.name;
+                            setPup(pup);
+                            setNameModalVisible(false);
+                        }}
+                        validationSchema={validationSchema}
+                    >
+                        {/* name input area */}
+                        <FormField autoCorrect={false} name="name" placeholder="name" />
+
+                        <View style={[styles.modalRow, {marginTop: 10}]}>
+                            <SubmitButton style={{marginRight: 'auto'}}>
+                                <MaterialCommunityIcons color={colors.tertiary} name="check" size={30}/>
+                            </SubmitButton>
+
+                            <TouchableOpacity
+                                onPress={() => setNameModalVisible(false)}
+                            >
+                                <MaterialCommunityIcons color={colors.secondary} name="close" size={30}/>
+                            </TouchableOpacity>
+                        </View>   
+                    </AppForm>
+                </View>
+            </View>
+        );
+    };
+
+    const renderPictureModal = () => {
+        return (
+            <View style={styles.modalWrapper}>
+                <View style={styles.modal}>
+                    <Icon 
+                        backgroundColor={colors.shade}
+                        color={colors.light}
+                        imageUri={imageUri}
+                        size={150}
+
+                        onPress={() => {
+                            if (imageUri) Alert.alert('Delete', 'Are you sure you want to delete this image?', [
+                                { text: 'Yes', onPress: () => setImageUri(null) },
+                                { text: 'No' }])
+                            else selectImage();
+                        }}
+                    />
+
+                    <View style={styles.modalRow}>
+                        <TouchableOpacity 
+                            style={{marginRight: 'auto'}}
+                            onPress={() => {
+                                pup.imageUri = imageUri;
+                                setPup(pup);
+                                setPictureModalVisible(false);
+                            }}
+                        >
+                            <MaterialCommunityIcons color={colors.tertiary} name="check" size={30}/>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                setImageUri(pup.imageUri);
+                                setPictureModalVisible(false);
+                            }}
+                        >
+                            <MaterialCommunityIcons color={colors.secondary} name="close" size={30}/>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        );
+    };
+
+    /*
+     * selects an image form image library and sets imageUri to it. 
+     */
+    const selectImage = async () => {
+        try {
+            const { assets } = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                quality: 0.5  
+            }); 
+            if (assets) {
+                setImageUri(assets[0].uri);
+            }
+        } catch (error) {
+            console.log('Error reading an image', error);
+        }
+    }
+
     return (
         <Screen options={[navigation.home, ...pupArray]}>
+            {/* picture modal */}
+            <ReactNativeModal animationIn={"fadeInUp"} animationOut={"fadeOutDown"} isVisible={pictureModalVisible}>
+                { renderPictureModal() }
+            </ReactNativeModal>
+
             {/* colors modal */}
             <ReactNativeModal animationIn={"fadeInUp"} animationOut={"fadeOutDown"} isVisible={colorModalVsisible}>
                 { renderColorModal() }
+            </ReactNativeModal>
+
+            {/* name modal */}
+            <ReactNativeModal animationIn={"fadeInUp"} animationOut={"fadeOutDown"} isVisible={nameModalVisible}>
+                { renderNameModal() }
             </ReactNativeModal>
 
             {/* header */}
@@ -83,6 +201,7 @@ function PupScreen(key) {
                     <View style={styles.headerRow}>
                         <TouchableOpacity
                             style={styles.headerButton}
+                            onPress={() => setPictureModalVisible(true)}
                         >
                             <MaterialCommunityIcons 
                                 color={colors.light}
@@ -93,7 +212,7 @@ function PupScreen(key) {
 
                         <TouchableOpacity
                             style={styles.headerButton}
-                            onPress = {() => setColorModalVisible(true)}
+                            onPress={() => setColorModalVisible(true)}
                         >
                             <MaterialCommunityIcons 
                                 color={colors.light}
@@ -104,6 +223,7 @@ function PupScreen(key) {
 
                         <TouchableOpacity
                             style={styles.headerButton}
+                            onPress={() => setNameModalVisible(true)}
                         >
                             <MaterialCommunityIcons 
                                 color={colors.light}
@@ -120,8 +240,8 @@ function PupScreen(key) {
                 Allergy Profile
             </AppText>
 
-            <DraggableFlatList
-            />
+            {/* <DraggableFlatList
+            /> */}
         </Screen>
     );
 }

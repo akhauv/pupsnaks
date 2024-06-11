@@ -35,7 +35,7 @@ function Icon({
             ]}>
                 <View style={[styles.background, { backgroundColor: backgroundColor, borderRadius: 0.5 * size }]}>
                     {/* render image URI if it exists */}
-                    {imageUri && <Image source={imageUri} style={styles.image}/>}
+                    {imageUri && <Image source={{uri: imageUri}} style={styles.image}/>}
 
                     {/* render icon if image URI doesn't exist */}
                     {!imageUri && <MaterialCommunityIcons

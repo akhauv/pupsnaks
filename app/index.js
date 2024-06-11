@@ -9,6 +9,8 @@ import HomeScreen from './HomeScreen';
 import AppColorPicker from '../components/AppColorPicker';
 import Pups from '../config/pups';
 import PupScreen from './PupScreen';
+import { AppRegistry } from 'react-native-web';
+import Icon from '../components/Icon';
 
 function index() {
     const [isReady, setIsReady] = useState(false);
@@ -31,7 +33,7 @@ function index() {
     }
 
     return (
-        <HomeScreen />
+        <PupScreen />
     );
 }
 

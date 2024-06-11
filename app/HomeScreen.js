@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, TouchableHighlight, View, Touchable } from 'react-native';
+import { Alert, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, TouchableHighlight, View, Touchable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DragSortableView } from 'react-native-drag-sort';
 import { LinearGradient } from 'expo-linear-gradient';
 import ReactNativeModal from 'react-native-modal';
-import * as ImagePicker from 'expo-image-picker'
+import * as ImagePicker from 'expo-image-picker';
+import * as Yup from 'yup';
 
 import Screen from '../components/Screen.js'
 import navigation from '../config/navigation.js';
@@ -13,6 +14,13 @@ import AppText from '../components/AppText.js';
 import pups from '../config/pups.js';
 import Icon from '../components/Icon.js';
 import AppColorPicker from '../components/AppColorPicker.js';
+import FormField from '../components/FormField.js';
+import AppForm from '../components/AppForm.js';
+import SubmitButton from '../components/SubmitButton.js';
+
+const validationSchema = Yup.object().shape({
+    name: Yup.string().required().min(1).label("Name")
+});
 
 const data=[pups[1], pups[2], pups[3]];
 const width = 370;
@@ -21,11 +29,11 @@ const childHeight = childWidth - 20;
 const childMargin = 45;
 
 function HomeScreen() {
-    const [pups, setPups] = useState(data);
-    const [scrollEnabled, setScrollEnabled] = useState(true);
-    const [color, setColor] = useState(colors.tertiary);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [imageUri, setImageUri] = useState(null);
+    const [color, setColor] = useState(colors.tertiary);        // new pup color
+    const [imageUri, setImageUri] = useState(null);             // new pup image
+    const [modalVisible, setModalVisible] = useState(false);    // new pup modal state
+    const [pups, setPups] = useState(data);                     // list of all pups
+    const [scrollEnabled, setScrollEnabled] = useState(true);   // false when reordering pups
 
     /*
      * Requests image library access. Only runs once.
@@ -72,6 +80,7 @@ function HomeScreen() {
                         color: item.color,
                         fontSize: 22,
                         marginTop: 10,
+                        textAlign: 'center',
                         textTransform: 'capitalize'
                     }}
                 >
@@ -87,71 +96,75 @@ function HomeScreen() {
     const renderModal = () => {
         return (
             <View style={styles.modalWrapper}>
-                <View style={[styles.modal, {marginBottom: 10}]}>
-                    {/* name input area */}
-                    <View style={[styles.inputRow, {marginBottom: 10}]}>
-                        <AppText style={{marginLeft: 5, marginRight: 15}}>Name:</AppText>
-                        <View style={styles.tempTextInputWrapper}>
-                            <AppText>input</AppText>
-                        </View>
-                    </View>
+                <AppForm
+                    initialValues={{name: ""}}
+                    onSubmit={values => {
+                        addPup(values.name, color, imageUri);
+                        setModalVisible(false);
+                        setImageUri(null);
+                    }}
+                    validationSchema={validationSchema}
+                >
+                    <View style={[styles.modal, {marginBottom: 10}]}>
+                        {/* name input area */}
+                        <FormField autoCorrect={false} name="name" placeholder="name" />
 
-                    {/* extra properties */}
-                    <View style={styles.inputRow}>
-                        {/* color picker which updates color state variable */}
-                        <AppColorPicker 
-                            exportColor={(newColor) => setColor(newColor)}
-                            initialColor={colors.tertiary}
-                        />
-
-                        <View style={{alignItems: 'center', flex: 1, marginLeft: 10}}>
-                            {/* icon display of new pup. clicking deletes image */}
-                            <Icon 
-                                backgroundColor={colors.shade}
-                                borderColor={color}
-                                color={colors.light}
-                                imageUri={imageUri}
-                                size={80}
-
-                                onPress={() => {
-                                    if (imageUri) Alert.alert('Delete', 'Are you sure you want to delete this image?', [
-                                        { text: 'Yes', onPress: () => setImageUri(null) },
-                                        { text: 'No' }])
-                                }}
+                        {/* extra properties */}
+                        <View style={[styles.inputRow, {marginTop: 10}]}>
+                            {/* color picker which updates color state variable */}
+                            <AppColorPicker 
+                                handleChange={(newColor) => setColor(newColor)}
+                                initialColor={colors.tertiary}
                             />
 
-                            {/* image input browser */}
-                            <Button title="hehe"
-                                onPress={selectImage()}/>
-                            {/* <TouchableHighlight style={styles.iconButton}>
-                                <View style={styles.row}>
-                                    <MaterialCommunityIcons color={colors.text} name='camera' size={30}/>
-                                    <AppText style={{fontSize: 14, marginLeft: 7}}>icon</AppText>
-                                </View>
-                            </TouchableHighlight> */}
+                            <View style={{alignItems: 'center', flex: 1, marginLeft: 10}}>
+                                {/* icon display of new pup. clicking deletes image */}
+                                <Icon 
+                                    backgroundColor={colors.shade}
+                                    borderColor={color}
+                                    color={colors.light}
+                                    imageUri={imageUri}
+                                    size={80}
+
+                                    onPress={() => {
+                                        if (imageUri) Alert.alert('Delete', 'Are you sure you want to delete this image?', [
+                                            { text: 'Yes', onPress: () => setImageUri(null) },
+                                            { text: 'No' }])
+                                        else selectImage();
+                                    }}
+                                />
+
+                                {/* image input browser */}
+                                <TouchableHighlight 
+                                    style={styles.iconButton}
+                                    onPress={() => selectImage()}
+                                >
+                                    <View style={styles.row}>
+                                        <MaterialCommunityIcons color={colors.text} name='camera' size={30}/>
+                                        <AppText style={{fontSize: 14, marginLeft: 7}}>icon</AppText>
+                                    </View>
+                                </TouchableHighlight>
+                            </View>
                         </View>
                     </View>
-                </View>
 
-                {/* create and cancel buttons */}
-                <View style={[styles.row, {alignContent: 'space-between', width: '85%'}]}>
-                    <TouchableOpacity 
-                        style={[styles.modalButton, {backgroundColor: colors.tertiary, marginRight: 5}]}
-                        onPress={() => {
-                            addPup("custom pup", color, null);
-                            setModalVisible(false);
-                        }}
-                    >
-                        <AppText style={{color: colors.light,}} weight={400}>Create</AppText>
-                    </TouchableOpacity>
+                    {/* create and cancel buttons */}
+                    <View style={[styles.row, {alignContent: 'space-between', width: '85%'}]}>
+                        <SubmitButton style={[styles.modalButton, {backgroundColor: colors.tertiary, marginRight: 5}]}>
+                            <AppText style={{color: colors.light,}} weight={400}>Create</AppText>
+                        </SubmitButton>
 
-                    <TouchableOpacity 
-                        style={[styles.modalButton, {backgroundColor: colors.secondary, marginLeft: 5}]}
-                        onPress={() => setModalVisible(false)}
-                    >
-                        <AppText style={{color: colors.light}} weight={400}>Cancel</AppText>
-                    </TouchableOpacity>
-                </View>
+                        <TouchableOpacity 
+                            style={[styles.modalButton, {backgroundColor: colors.secondary, marginLeft: 5}]}
+                            onPress={() => {
+                                setModalVisible(false);
+                                setImageUri(null);
+                            }}
+                        >
+                            <AppText style={{color: colors.light}} weight={400}>Cancel</AppText>
+                        </TouchableOpacity>
+                    </View>
+                </AppForm>
             </View>
         );
     }
@@ -271,7 +284,7 @@ function HomeScreen() {
                                 backgroundColor={colors.shade}
                                 color={colors.light}
                                 icon="plus" size={70}
-                                onPress={() => setModalVisible(true)}
+                                onPress={() => {setModalVisible(true)}}
                             />
                         </View>
                     </ScrollView>
@@ -287,18 +300,6 @@ function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-    tempTextInputWrapper: {
-        flex: 1,
-        backgroundColor: colors.shade,
-        borderRadius: 20,
-        padding: 10,
-        justifyContent: 'center',
-        alsignItems: 'center'
-    },
-
-
-
-
     button: {
         marginHorizontal: 3,
         top: -2.25,
