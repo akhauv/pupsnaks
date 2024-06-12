@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Touchable, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ReactNativeModal from 'react-native-modal';
 import * as ImagePicker from 'expo-image-picker'
-import DraggableFlatList from 'react-native-draggable-flatlist';
-import SwipeableFlatList from 'react-native-swipeable-list';
+import SwipeableFlatList from 'rn-gesture-swipeable-flatlist';
+import { ScrollView } from 'react-native-virtualized-view';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 import * as Yup from 'yup';
-import { Formik } from 'formik';
 
 import Screen from '../components/Screen';
 import navigation from '../config/navigation';
@@ -19,7 +20,7 @@ import AppForm from '../components/AppForm';
 import SubmitButton from '../components/SubmitButton';
 import FormField from '../components/FormField';
 
-const validationSchema = Yup.object().shape({
+const nameValidationSchema = Yup.object().shape({
     name: Yup.string().required().min(1).label("Name")
 });
 
@@ -30,14 +31,46 @@ function PupScreen(key) {
     // remove later
     key=1;
     const [pup, setPup] = useState(pups[key]);
+    const [allergies, setAllergies] = useState(pup.allergies); 
     const [color, setColor] = useState(pup.color);
     const [imageUri, setImageUri] = useState(pup.imageUri);
     const [colorModalVsisible, setColorModalVisible] = useState(false);
     const [pictureModalVisible, setPictureModalVisible] = useState(false); 
     const [nameModalVisible, setNameModalVisible] = useState(false);
+    keyNum = allergies.length;
+
+    const allergyValidationSchema = Yup.object().shape({
+        allergy: Yup.string().required().min(1).label("Allergy").test(
+            'uniqueCheck',
+            'This allergy is already logged.',
+            (value) => {
+                for (i in allergies) {
+                    if (value.toLowerCase() === allergies[i].toLowerCase()) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        ).test(
+            'whitespaceCheck',
+            'Please remove any preceding or trailing spaces.',
+            (value) => value.trim().length === value.length
+        )
+    });
 
     pupArray = pupArray.filter(pup => pup.key != key);
 
+    /* 
+     * Deletes an item from the allergy array. triggered by swiping
+     * on a list element and pressing delete.
+     */
+    const handleDelete = ( item ) => {
+        setAllergies((allergies).filter(allergy => allergy != item));
+    }
+
+    /* 
+     * Renders the modal popup to change pup color
+     */
     const renderColorModal = () => {
         return (
             <View style={styles.modalWrapper}>
@@ -72,6 +105,23 @@ function PupScreen(key) {
         );
     };
 
+    /* 
+     * renders an allergy list item
+     */
+    const renderListItem = ({ item }) => {
+        return (
+            <View 
+                style={[styles.listItem, {backgroundColor: pup.color}]}
+            >
+                <AppText style={styles.listText}>{ item }</AppText>
+            </View>
+        );
+    }
+
+    /* 
+     *  renders the popup modal to change pup name
+     */
+
     const renderNameModal = () => {
         return (
             <View style={styles.modalWrapper}>
@@ -83,7 +133,7 @@ function PupScreen(key) {
                             setPup(pup);
                             setNameModalVisible(false);
                         }}
-                        validationSchema={validationSchema}
+                        validationSchema={nameValidationSchema}
                     >
                         {/* name input area */}
                         <FormField autoCorrect={false} name="name" placeholder="name" />
@@ -105,6 +155,9 @@ function PupScreen(key) {
         );
     };
 
+    /* 
+     * renders the popup modal to change pup icon
+     */
     const renderPictureModal = () => {
         return (
             <View style={styles.modalWrapper}>
@@ -148,6 +201,21 @@ function PupScreen(key) {
             </View>
         );
     };
+
+    /* 
+     * renders the right swipe item of an allergy list item
+     */
+    const renderRightActions = (item) => {
+        return (
+            <View style={[styles.listRightItem, {backgroundColor: pup.color}]}>
+                <View style={styles.listRightItemShade}>
+                    <TouchableOpacity onPress={() => handleDelete(item)}>
+                        <MaterialCommunityIcons color={colors.light} name='trash-can' size={25} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    }
 
     /*
      * selects an image form image library and sets imageUri to it. 
@@ -235,18 +303,69 @@ function PupScreen(key) {
                 </View>
             </View>
 
-            {/* allergy content  */}
-            <AppText style={[styles.headerText, {marginLeft: 40, marginVertical: 30}]} weight={500}>
+            {/* ALLERGY CONTENT  */}
+            <AppText style={[styles.headerText, {marginBottom: 20, marginLeft: 40, marginTop: 30}]} weight={500}>
                 Allergy Profile
             </AppText>
 
-            {/* <DraggableFlatList
-            /> */}
+            {/* allergy add */}
+            <View style={styles.addAllergy}>
+                <AppForm
+                    initialValues={{allergy: ""}}
+                    onSubmit={(values) => setAllergies([...allergies, values.allergy])}
+                    validationSchema={allergyValidationSchema}
+                >   
+                <View style={{flex: 1}}>
+                    <FormField 
+                        name={"allergy"}
+                        placeholder={"New Allergy"}
+                        showError={true} 
+                        style={{marginRight: 40}}
+                    />
+                </View>
+
+                    <SubmitButton style={{marginLeft: -50}}>
+                        <Icon 
+                            backgroundColor={colors.shade} 
+                            color={colors.light}
+                            icon={"plus"}
+                            touchable={false}
+                        />
+                    </SubmitButton>
+                </AppForm>
+            </View>
+
+            {/* Allergy List */}
+            <ScrollView
+                bounces={false}
+                decelerationRate={'fast'}
+                showsVerticalScrollIndicator={false}
+                snapToInterval={60.95}
+            >
+            <GestureHandlerRootView>
+                <SwipeableFlatList
+                    bounces={false}
+                    data={allergies}
+                    ItemSeparatorComponent={() => <View style={{height: 10}}/>}
+                    keyExtractor={(item, index) => key = index}
+                    renderItem={renderListItem}
+                    renderRightActions={renderRightActions}    
+                    swipeableProps={{overshootRight: false}} 
+                />
+            </GestureHandlerRootView>
+            <View style={{height: 100}}></View>
+            </ScrollView>
         </Screen>
     );
 }
 
 const styles = StyleSheet.create({
+    addAllergy: {
+        flexDirection: 'row',
+        marginBottom: 20,
+        paddingHorizontal: 20,
+        width: '100%'
+    },
     header: {
         alignSelf: 'flex-end',
         backgroundColor: colors.shade,
@@ -272,6 +391,30 @@ const styles = StyleSheet.create({
     headerText: {
         color: colors.primary,
         fontSize: 30
+    },
+    listItem: {
+        borderRadius: 30,
+        padding: 15,
+        marginHorizontal: 20
+    },
+    listRightItem: {
+        borderBottomRightRadius: 30,
+        borderTopRightRadius: 30,
+        width: 90,
+        marginLeft: -50,
+        marginRight: 20,
+        overflow: 'hidden'
+    },
+    listRightItemShade: {
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        flex: 1,
+        justifyContent: 'center',
+        paddingLeft: 22,
+    },
+    listText: {
+        color: colors.light, 
+        textTransform: 'capitalize'
     },
     modal: {
         alignItems: 'center',

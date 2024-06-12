@@ -6,23 +6,23 @@ import { useFormikContext } from 'formik';
 import colors from '../config/colors';
 import ErrorMessage from './ErrorMessage';
 
-function FormField({ icon, label, name, ...otherProps }) {
+function FormField({ icon, label, name, showError = true, style, ...otherProps }) {
     const { handleChange, setFieldTouched, errors, touched } = useFormikContext();
 
     return (
         <>
-            <View style={styles.container}>
+            <View style={[styles.container]}>
                 {icon && <MaterialCommunityIcons name={icon} size={20} color={colors.text} style = {styles.icon} />}
                 <TextInput 
                     onChangeText={handleChange(name)}
                     onBlur={() => setFieldTouched(name)}
                     placeholderTextColor={colors.unknown}
-                    style={styles.text} 
+                    style={[styles.text, style]} 
                     {...otherProps}
                 />
             </View>
 
-            <ErrorMessage error={errors[name]} visible={touched[name]} style={styles.error} />
+            {showError && <ErrorMessage error={errors[name]} visible={touched[name]} style={styles.error} />}
         </>
     );
 }

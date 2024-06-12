@@ -4,7 +4,7 @@ export default {
         name: "Bear",
         color: "#9f4e1f",
         imageUri: null,
-        allergies: ["pork", "bananas"]
+        allergies: ["pork", "banans"]
     },
     2: {
         key: 2,
