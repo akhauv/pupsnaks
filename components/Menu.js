@@ -14,7 +14,6 @@ function Menu({ options=[] }) {
     // CHANGE LATER!
     /*
     The passed options array should ideally contain the following fields: 
-        - key
         - imageUri / icon
         - borderColor
     */
@@ -31,12 +30,12 @@ function Menu({ options=[] }) {
                 style={styles.menuScroll}
             >
                 {/* each element in the passed options array gets an icon */}
-                {options.map(option =>
+                {options.map((option, index) =>
                     <Icon
                         borderColor={option.color}
                         icon={option.icon}
                         imageUri={option.imageUri}
-                        key={option.key}
+                        key={index}
                         size={iconSize}
                         style={styles.menuIcon}
                     />
