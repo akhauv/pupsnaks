@@ -29,19 +29,25 @@ const nameValidationSchema = Yup.object().shape({
 const headerHeight = 140;   // used to calculate header icon size relative to header
 
 function PupScreen(name) {
-    // remove later
+    // remove later: temporary assignmetn
     name = "Bear";
+    const [pup, setPup] = useState(pups[name]);                             // current pup information
+    pupArray = pupArray.filter(i => i.name != name);                  // list of pups not including current
 
-    const [pup, setPup] = useState(pups[name]);
-    const [allergies, setAllergies] = useState(pup.allergies); 
-    const [color, setColor] = useState(pup.color);
-    const [imageUri, setImageUri] = useState(pup.imageUri);
-    const [colorModalVsisible, setColorModalVisible] = useState(false);
-    const [pictureModalVisible, setPictureModalVisible] = useState(false); 
-    const [nameModalVisible, setNameModalVisible] = useState(false);
+    const [allergies, setAllergies] = useState(pup.allergies);              // list of current pup allergies
+    const [color, setColor] = useState(pup.color);                          // pup color
+    const [colorModalVsisible, setColorModalVisible] = useState(false);     // color change modal state
+    const [imageUri, setImageUri] = useState(pup.imageUri);                 // pup icon image uri
+    const [nameModalVisible, setNameModalVisible] = useState(false);        // name change modal state
+    const [pictureModalVisible, setPictureModalVisible] = useState(false);  // icon change modal state
 
+    /*
+     *  The names of new allergies must be unique and have zero preceding or trailing whitespace for
+     *  validation purposes. 
+     */
     const allergyValidationSchema = Yup.object().shape({
         allergy: Yup.string().required().min(1).label("Allergy").test(
+            // allergies must be unique
             'uniqueCheck',
             'This allergy is already logged.',
             (value) => {
@@ -53,13 +59,12 @@ function PupScreen(name) {
                 return true;
             }
         ).test(
+            // no whitespace for validation purposes
             'whitespaceCheck',
             'Please remove any preceding or trailing spaces.',
             (value) => value.trim().length === value.length
         )
     });
-
-    pupArray = pupArray.filter(i => i.name != name);
 
     /* 
      * Deletes an item from the allergy array. triggered by swiping
@@ -76,22 +81,27 @@ function PupScreen(name) {
         return (
             <View style={styles.modalWrapper}>
                 <View style={styles.modal}>
+                    {/* color picker */}
                     <AppColorPicker 
                         initialColor={pup.color}
                         handleChange={(newColor) => setColor(newColor)}
                     />
+
                     <View style={styles.modalRow}>
+                        {/* finalize change button */}
                         <TouchableOpacity 
                             style={{marginRight: 'auto'}}
+
+                            // reassigns color and closes modal on submit
                             onPress={() => {
                                 pup.color = color;
-                                setPup(pup);
                                 setColorModalVisible(false);
                             }}
                         >
                             <MaterialCommunityIcons color={colors.tertiary} name="check" size={30}/>
                         </TouchableOpacity>
 
+                        {/* exit modal button */}
                         <TouchableOpacity
                             onPress={() => {
                                 setColor(pup.color);
@@ -100,6 +110,7 @@ function PupScreen(name) {
                         >
                             <MaterialCommunityIcons color={colors.secondary} name="close" size={30}/>
                         </TouchableOpacity>
+
                     </View>
                 </View>
             </View>
@@ -111,9 +122,7 @@ function PupScreen(name) {
      */
     const renderListItem = ({ item }) => {
         return (
-            <View 
-                style={[styles.listItem, {backgroundColor: pup.color}]}
-            >
+            <View style={[styles.listItem, {backgroundColor: pup.color}]}>
                 <AppText style={styles.listText}>{ item }</AppText>
             </View>
         );
@@ -122,41 +131,44 @@ function PupScreen(name) {
     /* 
      *  renders the popup modal to change pup name
      */
-
     const renderNameModal = () => {
         return (
             <View style={styles.modalWrapper}>
+                {/* name edit section  */}
                 <View style={styles.modal}>
                     <AppForm
                         initialValues={{name: ""}}
+                        validationSchema={nameValidationSchema}
+
+                        // renames pup and closes modal on submit
                         onSubmit={values => {
                             pup.name = values.name;
-                            setPup(pup);
                             setNameModalVisible(false);
                         }}
-                        validationSchema={nameValidationSchema}
                     >
                         {/* name input area */}
                         <FormField autoCorrect={false} name="name" placeholder="name" />
 
                         <View style={[styles.modalRow, {marginTop: 10}]}>
+                            {/* formik submit button */}
                             <SubmitButton style={{marginRight: 'auto'}}>
                                 <MaterialCommunityIcons color={colors.tertiary} name="check" size={30}/>
                             </SubmitButton>
 
-                            <TouchableOpacity
-                                onPress={() => setNameModalVisible(false)}
-                            >
+                            {/* exit modal button */}
+                            <TouchableOpacity onPress={() => setNameModalVisible(false)}>
                                 <MaterialCommunityIcons color={colors.secondary} name="close" size={30}/>
                             </TouchableOpacity>
+
                         </View>   
                     </AppForm>
                 </View>
 
+                {/* Delete Pup Section */}
                 <TouchableHighlight style={styles.deleteButton}>
                     <>
                         <MaterialCommunityIcons color={colors.light} name="trash-can" size={22} style={{marginRight: 5}} />
-                        <AppText style={{color: colors.light}} weight={400}>Delete Pup</AppText>
+                        <AppText style={styles.deleteButtonText} weight={400}>Delete Pup</AppText>
                     </>
                 </TouchableHighlight>
             </View>
@@ -383,6 +395,9 @@ const styles = StyleSheet.create({
         marginTop: 10,
         paddingHorizontal: 20,
         paddingVertical: 13,
+    },
+    deleteButtonText: {
+        color: colors.light
     },
     header: {
         alignSelf: 'flex-end',
