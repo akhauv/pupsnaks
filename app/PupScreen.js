@@ -1,45 +1,44 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Touchable, TouchableOpacity, TouchableHighlight, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import ReactNativeModal from 'react-native-modal';
-import * as ImagePicker from 'expo-image-picker'
-import SwipeableFlatList from 'rn-gesture-swipeable-flatlist';
-import { ScrollView } from 'react-native-virtualized-view';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Alert, StyleSheet, TouchableHighlight, TouchableOpacity, View } from 'react-native';
 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker'
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ReactNativeModal from 'react-native-modal';
+import { ScrollView } from 'react-native-virtualized-view';
+import SwipeableFlatList from 'rn-gesture-swipeable-flatlist';
 import * as Yup from 'yup';
 
-import Screen from '../components/Screen';
+import { AppColorPicker, AppForm, AppText, FormField, Icon, Screen, SubmitButton } from '../components'
+import colors from '../config/colors';
 import navigation from '../config/navigation';
 import pups from '../config/pups';
-import colors from '../config/colors';
-import Icon from '../components/Icon';
-import AppText from '../components/AppText';
-import AppColorPicker from '../components/AppColorPicker';
-import AppForm from '../components/AppForm';
-import SubmitButton from '../components/SubmitButton';
-import FormField from '../components/FormField';
 
+// DELETE!!!
+pupArray=[pups.Bear, pups.Rooney, pups.Roxi];
+
+/*
+ * When editing the pup name, inputted name must exist.
+ */
 const nameValidationSchema = Yup.object().shape({
     name: Yup.string().required().min(1).label("Name")
 });
-
-pupArray=[pups.Bear, pups.Rooney, pups.Roxi];
-const headerHeight = 140;
+/*
+ * Other Constnats
+ */
+const headerHeight = 140;   // used to calculate header icon size relative to header
 
 function PupScreen(name) {
     // remove later
     name = "Bear";
 
     const [pup, setPup] = useState(pups[name]);
-    console.log(pup);
     const [allergies, setAllergies] = useState(pup.allergies); 
     const [color, setColor] = useState(pup.color);
     const [imageUri, setImageUri] = useState(pup.imageUri);
     const [colorModalVsisible, setColorModalVisible] = useState(false);
     const [pictureModalVisible, setPictureModalVisible] = useState(false); 
     const [nameModalVisible, setNameModalVisible] = useState(false);
-    keyNum = allergies.length;
 
     const allergyValidationSchema = Yup.object().shape({
         allergy: Yup.string().required().min(1).label("Allergy").test(

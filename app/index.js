@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image } from 'react-native';
 import * as Font from "expo-font";
 
 import fonts from '../config/fonts';
 import PupScreen from './PupScreen';
 import HomeScreen from './HomeScreen';
-import Pups from '../config/pups';
 
 function index() {
     const [isReady, setIsReady] = useState(false);
@@ -28,14 +26,8 @@ function index() {
     }
 
     return (
-        <HomeScreen />
+        <PupScreen />
     );
 }
-
-const styles = StyleSheet.create({
-    fullScreenView: {
-        ...StyleSheet.absoluteFillObject
-    }
-})
 
 export default index;
