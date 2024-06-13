@@ -18,10 +18,6 @@ import FormField from '../components/FormField.js';
 import AppForm from '../components/AppForm.js';
 import SubmitButton from '../components/SubmitButton.js';
 
-const validationSchema = Yup.object().shape({
-    name: Yup.string().required().min(1).label("Name")
-});
-
 const data=[pups[1], pups[2], pups[3]];
 const width = 370;
 const childWidth = width / 2;
@@ -35,6 +31,25 @@ function HomeScreen() {
     const [pups, setPups] = useState(data);                     // list of all pups
     const [scrollEnabled, setScrollEnabled] = useState(true);   // false when reordering pups
 
+    const validationSchema = Yup.object().shape({
+        name: Yup.string().required().min(1).label("Name").test(
+            'uniqueCheck',
+            'You already have a pup under this name.',
+            (value) => {
+                for (i in pups) {
+                    if (value.toLowerCase() === pups[i].name.toLowerCase()) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        ).test(
+            'whitespaceCheck',
+            'Please remove any preceding or trailing spaces.',
+            (value) => value.trim().length === value.length
+        )
+    });
+
     /*
      * Requests image library access. Only runs once.
      */
@@ -47,7 +62,6 @@ function HomeScreen() {
      */
     const addPup = (name, color, imageUri) => {
         const newPup = {
-            key: pups.length + 1,
             name: name,
             color: color,
             imageUri: imageUri,
@@ -258,7 +272,7 @@ function HomeScreen() {
                             parentWidth={width}
 
                             dataSource={pups}
-                            keyExtractor={(item) => item.key}
+                            keyExtractor={(item, index) => key = index}
                             onDataChange={(pups) => {setPups(pups)}}
                             onDragEnd={() => setScrollEnabled(true)}
                             onDragStart={() => setScrollEnabled(false)}

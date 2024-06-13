@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Touchable, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Touchable, TouchableOpacity, TouchableHighlight, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ReactNativeModal from 'react-native-modal';
 import * as ImagePicker from 'expo-image-picker'
@@ -24,13 +24,15 @@ const nameValidationSchema = Yup.object().shape({
     name: Yup.string().required().min(1).label("Name")
 });
 
-pupArray=[pups[1], pups[2], pups[3]];
+pupArray=[pups.Bear, pups.Rooney, pups.Roxi];
 const headerHeight = 140;
 
-function PupScreen(key) {
+function PupScreen(name) {
     // remove later
-    key=1;
-    const [pup, setPup] = useState(pups[key]);
+    name = "Bear";
+
+    const [pup, setPup] = useState(pups[name]);
+    console.log(pup);
     const [allergies, setAllergies] = useState(pup.allergies); 
     const [color, setColor] = useState(pup.color);
     const [imageUri, setImageUri] = useState(pup.imageUri);
@@ -58,7 +60,7 @@ function PupScreen(key) {
         )
     });
 
-    pupArray = pupArray.filter(pup => pup.key != key);
+    pupArray = pupArray.filter(i => i.name != name);
 
     /* 
      * Deletes an item from the allergy array. triggered by swiping
@@ -151,6 +153,13 @@ function PupScreen(key) {
                         </View>   
                     </AppForm>
                 </View>
+
+                <TouchableHighlight style={styles.deleteButton}>
+                    <>
+                        <MaterialCommunityIcons color={colors.light} name="trash-can" size={22} style={{marginRight: 5}} />
+                        <AppText style={{color: colors.light}} weight={400}>Delete Pup</AppText>
+                    </>
+                </TouchableHighlight>
             </View>
         );
     };
@@ -365,6 +374,16 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         paddingHorizontal: 20,
         width: '100%'
+    },
+    deleteButton: {
+        alignItems: 'center',
+        backgroundColor: colors.high,
+        borderRadius: 15,
+        flexDirection: 'row',
+        marginLeft: 'auto',
+        marginTop: 10,
+        paddingHorizontal: 20,
+        paddingVertical: 13,
     },
     header: {
         alignSelf: 'flex-end',
