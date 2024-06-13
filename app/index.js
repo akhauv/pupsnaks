@@ -28,7 +28,7 @@ function index() {
     }
 
     return (
-        <PupScreen />
+        <HomeScreen />
     );
 }
 
