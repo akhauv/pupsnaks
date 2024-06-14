@@ -9,8 +9,8 @@ import colors from '../config/colors';
  *  It shows up when an error is present, otherwise stays invisible. 
  */
 
-function ErrorMessage({ error, style }) {
-    if (!error) return null;
+function ErrorMessage({ error, style, visible }) {
+    if (!visible || !error) return null;
 
     return (
         <AppText style={[styles.error, style]}>{ error }</AppText>

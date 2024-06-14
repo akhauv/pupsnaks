@@ -1,18 +1,28 @@
 import React from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
+
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFormikContext } from 'formik';
 
 import colors from '../config/colors';
 import ErrorMessage from './ErrorMessage';
 
-function FormField({ icon, label, name, showError = true, style, ...otherProps }) {
+/*
+ *  This app component is a text input field complete with Formik validation. It is only viable within a
+ *  Formik / AppForm component. 
+ */
+
+function FormField({ icon, label, name, style, ...otherProps }) {
+    /* pull outside Formik context */
     const { handleChange, setFieldTouched, errors, touched } = useFormikContext();
 
     return (
         <>
             <View style={[styles.container]}>
-                {icon && <MaterialCommunityIcons name={icon} size={20} color={colors.text} style = {styles.icon} />}
+                {/* if desired, an icon to the left of the text input */}
+                {icon && <MaterialCommunityIcons color={colors.text} name={icon} size={20} style = {styles.icon} />}
+
+                {/* text input */}
                 <TextInput 
                     onChangeText={handleChange(name)}
                     onBlur={() => setFieldTouched(name)}
@@ -20,9 +30,11 @@ function FormField({ icon, label, name, showError = true, style, ...otherProps }
                     style={[styles.text, style]} 
                     {...otherProps}
                 />
+
             </View>
 
-            {showError && <ErrorMessage error={errors[name]} visible={touched[name]} style={styles.error} />}
+            {/* error message */}
+            <ErrorMessage error={errors[name]} visible={touched[name]} style={styles.error} />
         </>
     );
 }

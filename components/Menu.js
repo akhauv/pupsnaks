@@ -1,23 +1,24 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import navigation from '../config/navigation';
 import colors from '../config/colors';
 import Icon from './Icon';
 
-// size constants
+/*
+ *  This comopnent renders a standard app menu based on an array of menu options.
+ *  Ideally, the passed options array should contain the following fields: 
+ *      - imageUri / icon
+ *      - borderColor
+ */
+
+/*
+ *  Size constants
+ */
 const iconSize = 92;
 const marginSize = 4;
 const cubbySize = iconSize + 2 * marginSize;
 
 function Menu({ options=[] }) {
-    // CHANGE LATER!
-    /*
-    The passed options array should ideally contain the following fields: 
-        - imageUri / icon
-        - borderColor
-    */
-
     return (
         <View style={styles.menuBar}>
             {/* scroll snaps to icon elements and is static otherwise */}
@@ -29,7 +30,7 @@ function Menu({ options=[] }) {
                 snapToInterval={cubbySize}
                 style={styles.menuScroll}
             >
-                {/* each element in the passed options array gets an icon */}
+                {/* each element in the passed options array is mapped to a menu icon */}
                 {options.map((option, index) =>
                     <Icon
                         borderColor={option.color}

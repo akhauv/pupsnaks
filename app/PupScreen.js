@@ -357,7 +357,6 @@ function PupScreen(name) {
                         <FormField 
                             name={"allergy"}
                             placeholder={"New Allergy"}
-                            showError={true} 
                             style={{marginRight: 40}}
                         />
                     </View>
