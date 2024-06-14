@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
+
 import ColorPicker, { HueCircular, Panel1 } from 'reanimated-color-picker'
 
 import colors from '../config/colors';
