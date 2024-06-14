@@ -16,16 +16,16 @@ import pups from '../config/pups.js';
 const data=[pups.Bear, pups.Roxi, pups.Rooney];
 
 /*
- *  Constants used for the widths and heights of pup list components
- */
-const width = 370;
-const childWidth = width / 2;
-const childHeight = childWidth - 20; 
-const childMargin = 45;
-/*
  *  Menu options
  */
 const menuOptions = [navigation.camera, navigation.search]
+/*
+ *  Other Constants
+ */
+const width = 370;                      // width of pup list
+const childWidth = width / 2;           // width of pup list component
+const childHeight = childWidth - 20;    // height of pup width component
+const childMargin = 45;                 // margin of pup list component
 
 function HomeScreen() {
     const [color, setColor] = useState(colors.tertiary);        // new pup color

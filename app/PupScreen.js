@@ -31,15 +31,15 @@ const headerHeight = 140;   // used to calculate header icon size relative to he
 function PupScreen(name) {
     // remove later: temporary assignmetn
     name = "Bear";
-    const [pup, setPup] = useState(pups[name]);                             // current pup information
-    pupArray = pupArray.filter(i => i.name != name);                  // list of pups not including current
+    const [pup, setPup] = useState(pups[name]);                                     // current pup information
+    const menuOptions = [navigation.home, ...pupArray.filter(i => i.name != name)]  // dynamic menu containing other pups
 
-    const [allergies, setAllergies] = useState(pup.allergies);              // list of current pup allergies
-    const [color, setColor] = useState(pup.color);                          // pup color
-    const [colorModalVsisible, setColorModalVisible] = useState(false);     // color change modal state
-    const [imageUri, setImageUri] = useState(pup.imageUri);                 // pup icon image uri
-    const [nameModalVisible, setNameModalVisible] = useState(false);        // name change modal state
-    const [pictureModalVisible, setPictureModalVisible] = useState(false);  // icon change modal state
+    const [allergies, setAllergies] = useState(pup.allergies);                      // list of current pup allergies
+    const [color, setColor] = useState(pup.color);                                  // pup color
+    const [colorModalVsisible, setColorModalVisible] = useState(false);             // color change modal state
+    const [imageUri, setImageUri] = useState(pup.imageUri);                         // pup icon image uri
+    const [nameModalVisible, setNameModalVisible] = useState(false);                // name change modal state
+    const [pictureModalVisible, setPictureModalVisible] = useState(false);          // icon change modal state
 
     /*
      *  The names of new allergies must be unique and have zero preceding or trailing whitespace for
@@ -140,7 +140,7 @@ function PupScreen(name) {
                         initialValues={{name: ""}}
                         validationSchema={nameValidationSchema}
 
-                        // renames pup and closes modal on submit
+                        /* renames pup and closes modal on submit */
                         onSubmit={values => {
                             pup.name = values.name;
                             setNameModalVisible(false);
@@ -182,12 +182,14 @@ function PupScreen(name) {
         return (
             <View style={styles.modalWrapper}>
                 <View style={styles.modal}>
+                    {/* chosen icon display */}
                     <Icon 
                         backgroundColor={colors.shade}
                         color={colors.light}
                         imageUri={imageUri}
                         size={150}
 
+                        /* prompts image select if no icon has been ulpoaded, or deletes chosen image if icon exists */
                         onPress={() => {
                             if (imageUri) Alert.alert('Delete', 'Are you sure you want to delete this image?', [
                                 { text: 'Yes', onPress: () => setImageUri(null) },
@@ -197,6 +199,7 @@ function PupScreen(name) {
                     />
 
                     <View style={styles.modalRow}>
+                        {/* save changes button */}
                         <TouchableOpacity 
                             style={{marginRight: 'auto'}}
                             onPress={() => {
@@ -208,6 +211,7 @@ function PupScreen(name) {
                             <MaterialCommunityIcons color={colors.tertiary} name="check" size={30}/>
                         </TouchableOpacity>
 
+                        {/* cancel button */}
                         <TouchableOpacity
                             onPress={() => {
                                 setImageUri(pup.imageUri);
@@ -216,6 +220,7 @@ function PupScreen(name) {
                         >
                             <MaterialCommunityIcons color={colors.secondary} name="close" size={30}/>
                         </TouchableOpacity>
+
                     </View>
                 </View>
             </View>
@@ -228,11 +233,15 @@ function PupScreen(name) {
     const renderRightActions = (item) => {
         return (
             <View style={[styles.listRightItem, {backgroundColor: pup.color}]}>
-                <View style={styles.listRightItemShade}>
-                    <TouchableOpacity onPress={() => handleDelete(item)}>
-                        <MaterialCommunityIcons color={colors.light} name='trash-can' size={25} />
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.listRightItemShade}
+
+                    /* triggers item delete from allergies list */
+                    onPress={() => handleDelete(item)}
+                >
+                    <MaterialCommunityIcons color={colors.light} name='trash-can' size={25} />
+                </TouchableOpacity>
             </View>
         );
     }
@@ -246,6 +255,8 @@ function PupScreen(name) {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 quality: 0.5  
             }); 
+
+            // 'assets' is returned by ImagePicker. The 0'th index contains all relevant information.
             if (assets) {
                 setImageUri(assets[0].uri);
             }
@@ -255,7 +266,7 @@ function PupScreen(name) {
     }
 
     return (
-        <Screen options={[navigation.home, ...pupArray]}>
+        <Screen options={menuOptions}>
             {/* picture modal */}
             <ReactNativeModal animationIn={"fadeInUp"} animationOut={"fadeOutDown"} isVisible={pictureModalVisible}>
                 { renderPictureModal() }
@@ -282,11 +293,15 @@ function PupScreen(name) {
                 />
 
                 <View style={styles.headerContent}>
+                    {/* pup name */}
                     <AppText style={[styles.headerText, {color: pup.color}]} weight={500}>
                         { pup.name }
                     </AppText>
 
+                    {/* row of edit options */}
                     <View style={styles.headerRow}>
+
+                        {/* edit pup icon; triggers icon modal */}
                         <TouchableOpacity
                             style={styles.headerButton}
                             onPress={() => setPictureModalVisible(true)}
@@ -298,6 +313,7 @@ function PupScreen(name) {
                             />
                         </TouchableOpacity>
 
+                        {/* edit pup color; triggers color modal */}
                         <TouchableOpacity
                             style={styles.headerButton}
                             onPress={() => setColorModalVisible(true)}
@@ -309,6 +325,7 @@ function PupScreen(name) {
                             />
                         </TouchableOpacity>
 
+                        {/* edit pup name or delet pup; triggers edit modal */}
                         <TouchableOpacity
                             style={styles.headerButton}
                             onPress={() => setNameModalVisible(true)}
@@ -324,7 +341,7 @@ function PupScreen(name) {
             </View>
 
             {/* ALLERGY CONTENT  */}
-            <AppText style={[styles.headerText, {marginBottom: 20, marginLeft: 40, marginTop: 30}]} weight={500}>
+            <AppText style={[styles.headerText, styles.allergyHeader]} weight={500}>
                 Allergy Profile
             </AppText>
 
@@ -334,16 +351,18 @@ function PupScreen(name) {
                     initialValues={{allergy: ""}}
                     onSubmit={(values) => setAllergies([...allergies, values.allergy])}
                     validationSchema={allergyValidationSchema}
-                >   
-                <View style={{flex: 1}}>
-                    <FormField 
-                        name={"allergy"}
-                        placeholder={"New Allergy"}
-                        showError={true} 
-                        style={{marginRight: 40}}
-                    />
-                </View>
+                >
+                    {/* allergy creation field */}
+                    <View style={{flex: 1}}>
+                        <FormField 
+                            name={"allergy"}
+                            placeholder={"New Allergy"}
+                            showError={true} 
+                            style={{marginRight: 40}}
+                        />
+                    </View>
 
+                    {/* allergy submission icon */}
                     <SubmitButton style={{marginLeft: -50}}>
                         <Icon 
                             backgroundColor={colors.shade} 
@@ -352,6 +371,7 @@ function PupScreen(name) {
                             touchable={false}
                         />
                     </SubmitButton>
+
                 </AppForm>
             </View>
 
@@ -362,18 +382,22 @@ function PupScreen(name) {
                 showsVerticalScrollIndicator={false}
                 snapToInterval={60.95}
             >
-            <GestureHandlerRootView>
-                <SwipeableFlatList
-                    bounces={false}
-                    data={allergies}
-                    ItemSeparatorComponent={() => <View style={{height: 10}}/>}
-                    keyExtractor={(item, index) => key = index}
-                    renderItem={renderListItem}
-                    renderRightActions={renderRightActions}    
-                    swipeableProps={{overshootRight: false}} 
-                />
-            </GestureHandlerRootView>
-            <View style={{height: 100}}></View>
+                {/* allergy list, which is swipeable to delete */}
+                <GestureHandlerRootView>
+                    <SwipeableFlatList
+                        bounces={false}
+                        ItemSeparatorComponent={() => <View style={{height: 10}}/>}
+                        keyExtractor={(item, index) => key = index}
+                        swipeableProps={{overshootRight: false}} 
+
+                        data={allergies}
+                        renderItem={renderListItem}
+                        renderRightActions={renderRightActions}    
+                    />
+                </GestureHandlerRootView>
+
+                {/* extra spacer at the end so last items are not obscured by the menu */}
+                <View style={styles.listBottomSpacer}></View>
             </ScrollView>
         </Screen>
     );
@@ -385,6 +409,11 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         paddingHorizontal: 20,
         width: '100%'
+    },
+    allergyHeader: {
+        marginBottom: 20,
+        marginLeft: 40,
+        marginTop: 30
     },
     deleteButton: {
         alignItems: 'center',
@@ -424,6 +453,9 @@ const styles = StyleSheet.create({
     headerText: {
         color: colors.primary,
         fontSize: 30
+    },
+    listBottomSpacer: {
+        height: 100
     },
     listItem: {
         borderRadius: 30,
