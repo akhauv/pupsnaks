@@ -14,6 +14,11 @@ import colors from '../config/colors';
 import navigation from '../config/navigation';
 import pups from '../config/pups';
 
+/*
+ *  This screen renders pup information. It features editing abilities for a pup's icon, color, and name,
+ *  and an editable list of the pup's allergies. 
+ */
+
 // DELETE!!!
 pupArray=[pups.Bear, pups.Rooney, pups.Roxi];
 

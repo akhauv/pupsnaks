@@ -13,6 +13,11 @@ import colors from '../config/colors.js';
 import navigation from '../config/navigation.js';
 import pups from '../config/pups.js';
 
+/*
+ *  This screen renders the app home screen, which features a greeting, account settings, and a 
+ *  rearrangable list of all current pups. 
+ */
+
 const data=[pups.Bear, pups.Roxi, pups.Rooney];
 
 /*
