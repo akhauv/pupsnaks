@@ -46,7 +46,8 @@
     "react-native-web": "~0.19.10",
     "reanimated-color-picker": "^3.0.4",
     "rn-gesture-swipeable-flatlist": "^2.3.1",
-    "yup": "^1.4.0"
+    "yup": "^1.4.0",
+    "expo-camera": "~15.0.11"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

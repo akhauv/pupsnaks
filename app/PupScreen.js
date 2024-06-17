@@ -391,7 +391,7 @@ function PupScreen(name) {
                     <SwipeableFlatList
                         bounces={false}
                         ItemSeparatorComponent={() => <View style={{height: 10}}/>}
-                        keyExtractor={(item, index) => key = index}
+                        keyExtractor={(item, index) => index.toString()}
                         swipeableProps={{overshootRight: false}} 
 
                         data={allergies}
