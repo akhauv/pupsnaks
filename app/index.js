@@ -5,8 +5,8 @@ import fonts from '../config/fonts';
 import PupScreen from './PupScreen';
 import HomeScreen from './HomeScreen';
 import CameraScreen from './CameraScreen';
-import HorizontalFlatList from './HorizontalFlatlist';
 import Pups from '../config/pups';
+import AnalysisScreen from './AnalysisScreen';
 
 function index() {
     const [isReady, setIsReady] = useState(false);
@@ -29,7 +29,7 @@ function index() {
     }
 
     return (
-        <CameraScreen />
+        <AnalysisScreen />
     );
 }
 

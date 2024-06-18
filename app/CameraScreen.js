@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View, FlatList, Dimensions } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
-import { AppText } from '../components';
+import { AppText, Icon } from '../components';
 import colors from '../config/colors';
 import pups from '../config/pups';
+import { Button } from 'react-native';
 
 // DELETE!!!!
 const allPups = [{name: "All Pups"}, pups.Bear, pups.Roxi, pups.Rooney, pups.place1, pups.place2, pups.place3, pups.place4];
@@ -17,10 +19,31 @@ const PICKER_MARGIN = 20;
 
 function CameraScreen() {
     const [firstItemWidth, setFirstItemWidth] = useState(null);     // used to calculate padding of pupPicker
+    const [imageUri, setImageUri] = useState("hehe");                     // image uri of taken picture
     const [lastItemWidth, setLastItemWidth] = useState(null);       // used to calculate padding of pupPicker
     const [offsetMap, setOffsetMap] = useState({});                 // map of offsets to pupPicker indices
+    const [permission, requestPermission] = useCameraPermissions(); // camera permissions
     const [selectedIndex, setSelectedIndex] = useState(0);          // currently selected for pupPicker
     const [snapOffsets, setSnapOffsets] = useState([]);             // offset snaps for pupPicker
+
+    /* 
+     *  set up camera usage
+     */
+    /* camera permissions are still loadng */
+    if (!permission) {
+        return <View />;
+    }
+    
+    if (!permission.granted) {
+        // Camera permissions are not granted yet.
+        return (
+            <View style={styles.container}>
+                <AppText style={{ textAlign: 'center' }}>We need your permission to show the camera</AppText>
+                <Button onPress={requestPermission} title="grant permission" />
+            </View>
+        );
+    }
+    
 
     /*
      *  calculates the padding needed to center the first and last pupPicker items
@@ -50,6 +73,8 @@ function CameraScreen() {
      *  Every time the layout changes, calculates item widths and offsets for pupPicker
      */ 
     const onItemLayout = (event) => {
+        if (snapOffsets.length === allPups.length) return;
+
         /* calculate item widths */ 
         const { width } = event.nativeEvent.layout;
 
@@ -81,7 +106,7 @@ function CameraScreen() {
         <View onLayout={(event) => onItemLayout(event)}>
             <AppText
                 key={index}
-                style={{color: index === selectedIndex ? colors.light : colors.primary}}
+                style={{color: index === selectedIndex ? colors.light : colors.primary, fontSize: 19}}
                 weight={500}
             >
                 {item.name}
@@ -105,6 +130,12 @@ function CameraScreen() {
 
                 </View>
 
+                {/* camera */}
+                <View style={{height: 500}}>
+                <CameraView style={{flex: 1}} facing={'back'}>
+                    
+                </CameraView></View>
+
                 {/* pup picker */}
                 <FlatList
                     bounces={false}
@@ -123,6 +154,43 @@ function CameraScreen() {
                     renderItem={renderItem}
                     snapToOffsets={snapOffsets}
                 />
+
+                {/* bottom content */}
+                <View style={styles.bottomRow}>
+                    {/* take image button  */}
+                    {!imageUri &&
+                        <Icon 
+                            backgroundColor={colors.high}
+                            borderColor={colors.light}
+                            borderWidth={4}
+                            icon={"blank"}
+                            size={70}
+                        />
+                        
+                    }
+
+                    {/* proceed or retake display */}
+                    {imageUri &&
+                        <>
+                            <Icon 
+                                backgroundColor={colors.shadow}
+                                borderColor={colors.shadow}
+                                borderWidth={4}
+                                color={'black'}
+                                icon={"refresh"}
+                                iconSize={50}
+                                size={65}
+                                style={styles.retakeButton}
+                            />
+                            <View style={styles.proceedButton}>
+                                <MaterialCommunityIcons color={colors.light} name={"check-bold"} size={40}/>
+                                <AppText style={styles.proceedText} weight={500}>
+                                    Let's Go!
+                                </AppText>
+                            </View>
+                        </>
+                    }
+                </View>
             </SafeAreaView>
         </View>
     );
@@ -132,6 +200,14 @@ const styles = StyleSheet.create({
     background: {
         backgroundColor: 'black',
         ...StyleSheet.absoluteFillObject
+    },
+    bottomRow: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 'auto',
+        marginTop: 25, 
+        width: '100%'
     },
     exitButton: {
         position: 'absolute',
@@ -147,8 +223,26 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'center',
-        width: '100%',
         paddingVertical: 10,
+        width: '100%',
+    },
+    proceedButton: {
+        alignItems: 'center',
+        backgroundColor: colors.tertiary,
+        borderBottomLeftRadius: 35,
+        borderTopLeftRadius: 35,
+        flex: 1,
+        flexDirection: 'row',
+        height: 65,
+        paddingLeft: 13
+    },
+    proceedText: {
+        color: colors.light,
+        fontSize: 26, 
+        marginLeft: 30
+    },
+    retakeButton: {
+        marginHorizontal: 20
     }
 })
 

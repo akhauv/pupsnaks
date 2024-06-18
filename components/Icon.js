@@ -16,6 +16,7 @@ function Icon({
     borderWidth,                        // orbit border width
     color = colors.shade,               // vector icon color
     icon = "paw",                       // vector icon name
+    iconSize,                           // size of inner icon
     imageUri,                           // image address
     onPress,                            // onPress to make icon clickable. only valid if touchable
     touchable = true,                   // determines whether icon will be nested in a toucahble component
@@ -50,7 +51,7 @@ function Icon({
                     {!imageUri && <MaterialCommunityIcons
                         color={color}
                         name={icon}
-                        size={borderColor ? 0.5 * size : 0.6 * size}
+                        size={iconSize ? iconSize : (borderColor ? 0.5 * size : 0.6 * size)}
                     />}
                 </View>
             </View>
