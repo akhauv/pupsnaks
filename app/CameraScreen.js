@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View, FlatList, Dimensions } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Button, SafeAreaView, StyleSheet, TouchableOpacity, View, FlatList, Dimensions, Image } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -7,7 +7,6 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { AppText, Icon } from '../components';
 import colors from '../config/colors';
 import pups from '../config/pups';
-import { Button } from 'react-native';
 
 // DELETE!!!!
 const allPups = [{name: "All Pups"}, pups.Bear, pups.Roxi, pups.Rooney, pups.place1, pups.place2, pups.place3, pups.place4];
@@ -16,10 +15,14 @@ const allPups = [{name: "All Pups"}, pups.Bear, pups.Roxi, pups.Rooney, pups.pla
  *  Other Costants
  */
 const PICKER_MARGIN = 20;
+const { width } = Dimensions.get('screen');
 
 function CameraScreen() {
+    const cameraRef = useRef(null);
+
+    const [cameraReady, setCameraReady] = useState(false);          // judges the state of the camera
     const [firstItemWidth, setFirstItemWidth] = useState(null);     // used to calculate padding of pupPicker
-    const [imageUri, setImageUri] = useState("hehe");                     // image uri of taken picture
+    const [imageUri, setImageUri] = useState();                     // image uri of taken picture
     const [lastItemWidth, setLastItemWidth] = useState(null);       // used to calculate padding of pupPicker
     const [offsetMap, setOffsetMap] = useState({});                 // map of offsets to pupPicker indices
     const [permission, requestPermission] = useCameraPermissions(); // camera permissions
@@ -43,7 +46,6 @@ function CameraScreen() {
             </View>
         );
     }
-    
 
     /*
      *  calculates the padding needed to center the first and last pupPicker items
@@ -101,7 +103,6 @@ function CameraScreen() {
     /*
      *  renders a pupPicker item
      */
-
     const renderItem = ({ item, index }) => (
         <View onLayout={(event) => onItemLayout(event)}>
             <AppText
@@ -113,6 +114,17 @@ function CameraScreen() {
             </AppText>
         </View>
     );
+
+    /*
+     *  Takes a picture
+     */
+    const takePictureAsync = async () => {
+        if (cameraRef.current && cameraReady) {
+            const photo = await cameraRef.current.takePictureAsync({ base64: true, skipProcessing: true });
+            setImageUri(photo.uri);
+            console.log(photo.uri);
+        };
+    }
 
     return (
         <View style={styles.background}>
@@ -131,10 +143,16 @@ function CameraScreen() {
                 </View>
 
                 {/* camera */}
-                <View style={{height: 500}}>
-                <CameraView style={{flex: 1}} facing={'back'}>
-                    
-                </CameraView></View>
+                <View style={styles.cameraWrapper}>
+                    <CameraView 
+                        onCameraReady={() => setCameraReady(true)} 
+                        ref={cameraRef}
+                        style={styles.camera}
+                    />
+
+                    {/* render image over camera once taken */}
+                    {imageUri && <Image source={{uri: imageUri}} style={styles.image}/>}
+                </View>
 
                 {/* pup picker */}
                 <FlatList
@@ -159,29 +177,36 @@ function CameraScreen() {
                 <View style={styles.bottomRow}>
                     {/* take image button  */}
                     {!imageUri &&
-                        <Icon 
-                            backgroundColor={colors.high}
-                            borderColor={colors.light}
-                            borderWidth={4}
-                            icon={"blank"}
-                            size={70}
-                        />
-                        
+                        <TouchableOpacity onPress={() => takePictureAsync()}>
+                            <Icon 
+                                backgroundColor={colors.high}
+                                borderColor={colors.light}
+                                borderWidth={4}
+                                size={70}
+                                touchable={false}
+                            />
+                        </TouchableOpacity>
                     }
 
                     {/* proceed or retake display */}
                     {imageUri &&
                         <>
-                            <Icon 
-                                backgroundColor={colors.shadow}
-                                borderColor={colors.shadow}
-                                borderWidth={4}
-                                color={'black'}
-                                icon={"refresh"}
-                                iconSize={50}
-                                size={65}
-                                style={styles.retakeButton}
-                            />
+                            {/* retake  */}
+                            <TouchableOpacity onPress={() => setImageUri(null)}>
+                                <Icon 
+                                    backgroundColor={colors.shadow}
+                                    borderColor={colors.shadow}
+                                    borderWidth={4}
+                                    color={'black'}
+                                    icon={"refresh"}
+                                    iconSize={50}
+                                    size={65}
+                                    style={styles.retakeButton}
+                                    touchable={false}
+                                />
+                            </TouchableOpacity>
+
+                            {/* proceed */}
                             <View style={styles.proceedButton}>
                                 <MaterialCommunityIcons color={colors.light} name={"check-bold"} size={40}/>
                                 <AppText style={styles.proceedText} weight={500}>
@@ -209,6 +234,17 @@ const styles = StyleSheet.create({
         marginTop: 25, 
         width: '100%'
     },
+    camera: {
+        flex: 1
+    },
+    cameraWrapper: {
+        borderRadius: 20,
+        height: width / 3 * 4,
+        marginBottom: 20,
+        marginTop: 10,
+        overflow: 'hidden',
+        width: '100%'
+    },
     exitButton: {
         position: 'absolute',
         left: 10
@@ -225,6 +261,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: 10,
         width: '100%',
+    },
+    image: {
+        bottom: 0,
+        left: 0,
+        right: 0,
+        top: 0,
+        position: 'absolute',
     },
     proceedButton: {
         alignItems: 'center',
