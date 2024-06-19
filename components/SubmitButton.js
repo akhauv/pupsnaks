@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Keyboard, TouchableOpacity } from 'react-native';
 
 import { useFormikContext } from 'formik';
 
@@ -13,7 +13,10 @@ function SubmitButton({ children, style }) {
     return (
         <TouchableOpacity 
             style={style}
-            onPress={handleSubmit}
+            onPress={() => {
+                handleSubmit();
+                Keyboard.dismiss();
+            }}
         >
             { children }
         </TouchableOpacity>

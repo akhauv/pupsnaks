@@ -34,7 +34,7 @@ function Menu({ options=[] }) {
                 {options.map((option, index) =>
                     <Icon
                         borderColor={option.color}
-                        icon={option.icon}
+                        icon={option.icon ? option.icon : "paw"}
                         imageUri={option.imageUri}
                         key={index}
                         size={iconSize}

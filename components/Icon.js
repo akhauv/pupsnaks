@@ -15,7 +15,7 @@ function Icon({
     borderColor,                        // orbit border color
     borderWidth,                        // orbit border width
     color = colors.shade,               // vector icon color
-    icon = "paw",                       // vector icon name
+    icon,                               // vector icon name
     iconSize,                           // size of inner icon
     imageUri,                           // image address
     onPress,                            // onPress to make icon clickable. only valid if touchable
@@ -48,7 +48,7 @@ function Icon({
                     {imageUri && <Image source={{uri: imageUri}} style={styles.image}/>}
 
                     {/* render icon if image URI doesn't exist */}
-                    {!imageUri && <MaterialCommunityIcons
+                    {!imageUri && icon && <MaterialCommunityIcons
                         color={color}
                         name={icon}
                         size={iconSize ? iconSize : (borderColor ? 0.5 * size : 0.6 * size)}

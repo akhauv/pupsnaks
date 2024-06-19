@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, TouchableHighlight, View, Touchable } from 'react-native';
+import { Alert, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, TouchableHighlight, View } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -96,6 +96,7 @@ function HomeScreen() {
                     backgroundColor={colors.shade}
                     borderColor={item.color}
                     color={item.color}
+                    icon={"paw"}
                     imageUri={item.imageUri}
                     touchable={false}
                     size={115}
@@ -143,6 +144,7 @@ function HomeScreen() {
                                     backgroundColor={colors.shade}
                                     borderColor={color}
                                     color={colors.light}
+                                    icon={"paw"}
                                     imageUri={imageUri}
                                     size={80}
 

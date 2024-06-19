@@ -29,7 +29,7 @@ function index() {
     }
 
     return (
-        <AnalysisScreen />
+        <PupScreen />
     );
 }
 

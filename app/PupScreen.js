@@ -191,6 +191,7 @@ function PupScreen(name) {
                     <Icon 
                         backgroundColor={colors.shade}
                         color={colors.light}
+                        icon={"paw"}
                         imageUri={imageUri}
                         size={150}
 
@@ -292,6 +293,7 @@ function PupScreen(name) {
                 <Icon
                     borderColor={pup.color}
                     borderWidth={5}
+                    icon={"paw"}
                     imageUri={pup.imageUri}
                     padding={false}
                     size={headerHeight}
