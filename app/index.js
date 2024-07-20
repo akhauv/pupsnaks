@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import * as Font from "expo-font";
 
 import fonts from '../config/fonts';
-import PupScreen from './PupScreen';
-import HomeScreen from './HomeScreen';
-import CameraScreen from './CameraScreen';
-import Pups from '../config/pups';
 import AnalysisScreen from './AnalysisScreen';
+import Pups from '../config/pups';
+import HomeScreen from './HomeScreen.js'
 
 function index() {
     const [isReady, setIsReady] = useState(false);
@@ -29,7 +27,7 @@ function index() {
     }
 
     return (
-        <PupScreen />
+        <HomeScreen />
     );
 }
 

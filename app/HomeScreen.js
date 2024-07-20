@@ -233,7 +233,7 @@ function HomeScreen() {
             </ReactNativeModal>
 
             {/* image header */}
-            <ImageBackground source={require('../assets/images/sunset.png')} style={styles.image}>
+            <ImageBackground source={require('../assets/images/morningTemp.png')} style={styles.image}>
                 <AppText style={[styles.greeting, {color: colors.primary}]} weight={500}>
                     Morning,
                 </AppText>

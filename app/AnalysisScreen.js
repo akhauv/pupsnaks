@@ -1,63 +1,150 @@
 import React, { useState } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
-import { AppText, Screen } from '../components';
 
+import { AppText, Screen } from '../components';
 import navigation from '../config/navigation';
 import colors from '../config/colors';
 import pups from '../config/pups';
 import ReactNativeModal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import supabase from '../config/supabase';
+import { useFocusEffect } from '@react-navigation/native';
 
+allIngredientsTemp = ['lorem', 'avocado spread', 'ipsum', 'apricot juice', 'dark chocolate', 'coffee bean extract', 'green tea leaves', 'dolor', 'sit', 'amet']
 // DELETE
-const data = [{name: 'lorem', toxicity: 'unknown'},
-              {name: 'ipsum', toxicity: 'high'}, 
-              {name: 'dolor', toxicity: 'medium'}, 
-              {name: 'sit', toxicity: 'low'},
-              {name: 'amet', toxicity: 'safe'},
-              {name: 'consecteteur', toxicity: 'conditional'},
-              {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-              {name: 'elit', toxicity: 'unknown'},
-              {name: 'lorem', toxicity: 'unknown'},
-              {name: 'ipsum', toxicity: 'high'}, 
-              {name: 'dolor', toxicity: 'medium'}, 
-              {name: 'sit', toxicity: 'low'},
-              {name: 'amet', toxicity: 'safe'},
-              {name: 'consecteteur', toxicity: 'conditional'},
-              {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-              {name: 'elit', toxicity: 'unknown'},
-              {name: 'lorem', toxicity: 'unknown'},
-              {name: 'ipsum', toxicity: 'high'}, 
-              {name: 'dolor', toxicity: 'medium'}, 
-              {name: 'sit', toxicity: 'low'},
-              {name: 'amet', toxicity: 'safe'},
-              {name: 'consecteteur', toxicity: 'conditional'},
-              {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-              {name: 'elit', toxicity: 'unknown'},
-              {name: 'lorem', toxicity: 'unknown'},
-              {name: 'ipsum', toxicity: 'high'}, 
-              {name: 'dolor', toxicity: 'medium'}, 
-              {name: 'sit', toxicity: 'low'},
-              {name: 'amet', toxicity: 'safe'},
-              {name: 'consecteteur', toxicity: 'conditional'},
-              {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-              {name: 'elit', toxicity: 'unknown'},
-              {name: 'lorem', toxicity: 'unknown'},
-              {name: 'ipsum', toxicity: 'high'}, 
-              {name: 'dolor', toxicity: 'medium'}, 
-              {name: 'sit', toxicity: 'low'},
-              {name: 'amet', toxicity: 'safe'},
-              {name: 'consecteteur', toxicity: 'conditional'},
-              {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-              {name: 'elit', toxicity: 'unknown'}];
+// const data = [{name: 'lorem', toxicity: 'unknown'},
+//               {name: 'ipsum', toxicity: 'high'}, 
+//               {name: 'dolor', toxicity: 'medium'}, 
+//               {name: 'sit', toxicity: 'low'},
+//               {name: 'amet', toxicity: 'safe'},
+//               {name: 'consecteteur', toxicity: 'conditional'},
+//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
+//               {name: 'elit', toxicity: 'unknown'},
+//               {name: 'lorem', toxicity: 'unknown'},
+//               {name: 'ipsum', toxicity: 'high'}, 
+//               {name: 'dolor', toxicity: 'medium'}, 
+//               {name: 'sit', toxicity: 'low'},
+//               {name: 'amet', toxicity: 'safe'},
+//               {name: 'consecteteur', toxicity: 'conditional'},
+//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
+//               {name: 'elit', toxicity: 'unknown'},
+//               {name: 'lorem', toxicity: 'unknown'},
+//               {name: 'ipsum', toxicity: 'high'}, 
+//               {name: 'dolor', toxicity: 'medium'}, 
+//               {name: 'sit', toxicity: 'low'},
+//               {name: 'amet', toxicity: 'safe'},
+//               {name: 'consecteteur', toxicity: 'conditional'},
+//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
+//               {name: 'elit', toxicity: 'unknown'},
+//               {name: 'lorem', toxicity: 'unknown'},
+//               {name: 'ipsum', toxicity: 'high'}, 
+//               {name: 'dolor', toxicity: 'medium'}, 
+//               {name: 'sit', toxicity: 'low'},
+//               {name: 'amet', toxicity: 'safe'},
+//               {name: 'consecteteur', toxicity: 'conditional'},
+//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
+//               {name: 'elit', toxicity: 'unknown'},
+//               {name: 'lorem', toxicity: 'unknown'},
+//               {name: 'ipsum', toxicity: 'high'}, 
+//               {name: 'dolor', toxicity: 'medium'}, 
+//               {name: 'sit', toxicity: 'low'},
+//               {name: 'amet', toxicity: 'safe'},
+//               {name: 'consecteteur', toxicity: 'conditional'},
+//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
+//               {name: 'elit', toxicity: 'unknown'}];
 const allPups = [pups.Bear, pups.Roxi, pups.Rooney];
 
 const toxicityLevels = ['safe', 'low', 'medium', 'high', 'conditional']
 
 function AnalysisScreen() {
+    const [allIngredients, setAllIngredients] = useState(allIngredientsTemp);
     const [activeIngredient, setActiveIngredient] = useState();
     const [informationModalVisible, setInformationModalVisible] = useState(false); 
     const [unknownModalVisible, setUnknownModalVisible] = useState(true); 
-    const [allergyModalVisible, setAllergyModalVisible] = useState(false); 
+    const [allergyModalVisible, setAllergyModalVisible] = useState(false);
+    const [namesData, setNamesData] = useState();
+    const [data, setData] = useState([])
+
+    /* load all names beforehand for time efficiency and initialize realtime subscirption */
+    useEffect(() => {
+        // Handle data changes in the substances table
+        const handleUpdate = (payload) => {
+            // Update local state with new data
+            setNamesData(payload.new)
+        };
+    
+        // Set up real-time subscription
+        const subscription = supabase
+            .from('substances')
+            .on('*', handleUpdate) // Listen for all changes (inserts, updates, deletes)
+            .subscribe();
+    
+        // Fetch names data
+        const fetchNamesData = async () => {
+            const { data: initialData, error } = await supabase
+                .from('substances')
+                .select('names');
+            if (error) {
+                setData([]);
+            } else {
+                setData(initialData);
+            }
+        };
+    
+        fetchNamesData();
+    
+        // Cleanup on component unmount
+        return () => {
+          supabase.removeSubscription(subscription);
+        };
+    }, []);
+
+    /* create data map */
+    useEffect(() => {
+        const configureData = async () => {
+            try {
+                for (ingredient in allIngredients) {
+                    const ingredientData = await(fetchData(ingredient));
+                    const ingredientStructure = {
+                        name: ingredient,
+                        alias: ingredientData.alias,
+                        toxicity: ingredientData.toxicity
+                    };
+                    setData([...data, ingredientStructure]);
+                }
+            } catch (error) {
+                console.error("failure to fetch data");
+            }
+        }
+
+        configureData();
+    }, [allIngredients]);
+
+    const fetchData = async (name) => {
+        /* get matching general name to query and sort by matching length */ 
+        const matchingNames = namesData
+            .filter(posName => name.includes(posName))
+            .sort((a, b) => b.length - a.length);
+        if (matchingNames.length === 0) return null;
+        const nameToQuery = matchingNames[0];
+
+        /* query name with custom function and return alias, toxicity, and description. */
+        const {data, error} = await supabase
+            .rpc('get_toxicity_details', {nameToQuery});
+
+        if (error) return null;
+        return data;
+    }
+
+    const fetchDescription = async (alias) => {
+        const {desc, error} = await supabase
+            .from('toxicities')
+            .select('description')
+            .eq('alias', alias);
+        
+        if (error) return null;
+        return data;
+    }
 
     const renderAllergyModal = () => {
         /* generate list of allergic pups */
