@@ -12,49 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 allIngredientsTemp = ['lorem', 'avocado spread', 'ipsum', 'apricot juice', 'dark chocolate', 'coffee bean extract', 'green tea leaves', 'dolor', 'sit', 'amet']
 
-// DELETE
-// const data = [{name: 'lorem', toxicity: 'unknown'},
-//               {name: 'ipsum', toxicity: 'high'}, 
-//               {name: 'dolor', toxicity: 'medium'}, 
-//               {name: 'sit', toxicity: 'low'},
-//               {name: 'amet', toxicity: 'safe'},
-//               {name: 'consecteteur', toxicity: 'conditional'},
-//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-//               {name: 'elit', toxicity: 'unknown'},
-//               {name: 'lorem', toxicity: 'unknown'},
-//               {name: 'ipsum', toxicity: 'high'}, 
-//               {name: 'dolor', toxicity: 'medium'}, 
-//               {name: 'sit', toxicity: 'low'},
-//               {name: 'amet', toxicity: 'safe'},
-//               {name: 'consecteteur', toxicity: 'conditional'},
-//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-//               {name: 'elit', toxicity: 'unknown'},
-//               {name: 'lorem', toxicity: 'unknown'},
-//               {name: 'ipsum', toxicity: 'high'}, 
-//               {name: 'dolor', toxicity: 'medium'}, 
-//               {name: 'sit', toxicity: 'low'},
-//               {name: 'amet', toxicity: 'safe'},
-//               {name: 'consecteteur', toxicity: 'conditional'},
-//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-//               {name: 'elit', toxicity: 'unknown'},
-//               {name: 'lorem', toxicity: 'unknown'},
-//               {name: 'ipsum', toxicity: 'high'}, 
-//               {name: 'dolor', toxicity: 'medium'}, 
-//               {name: 'sit', toxicity: 'low'},
-//               {name: 'amet', toxicity: 'safe'},
-//               {name: 'consecteteur', toxicity: 'conditional'},
-//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-//               {name: 'elit', toxicity: 'unknown'},
-//               {name: 'lorem', toxicity: 'unknown'},
-//               {name: 'ipsum', toxicity: 'high'}, 
-//               {name: 'dolor', toxicity: 'medium'}, 
-//               {name: 'sit', toxicity: 'low'},
-//               {name: 'amet', toxicity: 'safe'},
-//               {name: 'consecteteur', toxicity: 'conditional'},
-//               {name: 'adipiscing', toxicity: 'allergy', pups: [0, 1]},
-//               {name: 'elit', toxicity: 'unknown'}];
 const allPups = [pups.Bear, pups.Roxi, pups.Rooney];
-
 const toxicityLevels = ['safe', 'low', 'medium', 'high', 'conditional']
 
 function AnalysisScreen() {
@@ -66,6 +24,7 @@ function AnalysisScreen() {
     const [namesData, setNamesData] = useState();
     const [data, setData] = useState([])
     const [allergyData, setAllergyData] = useState({})
+    const [activePup, setActivePup] = useState(-1); 
 
     /* fetch names data */
     useEffect(() => {
@@ -192,8 +151,8 @@ function AnalysisScreen() {
     const renderAllergyModal = () => {
         /* generate list of allergic pups */
         var allergicPups = [];
-        for (var i in activeIngredient.pups) {
-            allergicPups = [...allergicPups, allPups[activeIngredient.pups[i]]];
+        for (var pupInd of allergyData[activeIngredient.name]) {
+            allergicPups = [...allergicPups, allPups[pupInd]];
         }
 
         return (
@@ -234,19 +193,28 @@ function AnalysisScreen() {
         );
     }
 
+    const isActiveAllergy = (ingredient) => {
+        if (!(ingredient.name in allergyData)) return false; 
+
+        // check whether the active allergy applies to this pup
+        thisAllergy = allergyData[ingredient.name]; 
+        if ((activePup === -1) || (activePup in thisAllergy)) return true;
+        return false;
+    }
+
     const renderItem = (item, index) => {
         return (
             <TouchableOpacity 
                 key={index}
                 onPress={() => {
                     setActiveIngredient(item);
-                    if (item.toxicity === 'allergy') setAllergyModalVisible(true);
+                    if (isActiveAllergy(item)) setAllergyModalVisible(true);
                     else if (item.toxicity === 'unknown') setUnknownModalVisible(true);
                     else setInformationModalVisible(true); 
                 }}
                 style={styles.ingredient}>
                 <AppText 
-                    style={{color: colors[item.toxicity]}}
+                    style={{color: isActiveAllergy(item) ? colors['allergy'] : colors[item.toxicity]}}
                     weight={item.toxicity === 'unknown' ? 100 : 300}
                 >
                     { item.name }

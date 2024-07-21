@@ -9,7 +9,7 @@ export default {
         name: "Roxi",
         color: "#4f6e68",
         imageUri: null,
-        allergies: ["friendship", "little kids", "sit"]
+        allergies: ["friendship", "little kids", "sit", "lorem"]
     },
     Pumpkin: {
         name: "pumpkin",
