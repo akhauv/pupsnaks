@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
+import { FlatList, StyleSheet, TouchableOpacity, View, ScrollView, TouchableWithoutFeedback } from 'react-native';
 
 import { AppText, Screen } from '../components';
 import nav from '../config/nav';
@@ -25,6 +25,14 @@ function AnalysisScreen() {
     const [data, setData] = useState([])
     const [allergyData, setAllergyData] = useState({})
     const [activePup, setActivePup] = useState(-1); 
+    const [pickerModalVisible, setPickerModalVisible] = useState(false)
+
+    const rgba = (hex, alpha) => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
 
     /* fetch names data */
     useEffect(() => {
@@ -147,16 +155,6 @@ function AnalysisScreen() {
         return dataDict;
     }
 
-    const fetchDescription = async (alias) => {
-        const {data, error} = await supabase
-            .from('toxicities')
-            .select('description')
-            .eq('alias', alias);
-        
-        if (error) return null;
-        return data[description];
-    }
-
     const renderAllergyModal = () => {
         if (!allergyData || !activeIngredient || !isActiveAllergy(activeIngredient)) return <></>;
 
@@ -184,20 +182,30 @@ function AnalysisScreen() {
                     </View>
 
                     {/* information */}
-                    <ScrollView contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
-                        <AppText>
-                            The following pups are allergic to { activeIngredient.name }:
-                        </AppText>
+                    <ScrollView bounces={false} contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
+                        {activePup === -1 &&
+                            <>
+                                <AppText>
+                                    The following pups are allergic to { activeIngredient.name }:
+                                </AppText>
+                                
+                                {/* list of allergic pups */}
+                                <ScrollView bounces={false} style={styles.pupWrapper}>
+                                    {allergicPups.map((pup, index) => 
+                                        <View key={index} style={styles.pupRow}>
+                                            <MaterialCommunityIcons color={pup.color} name='circle' size={7} style={styles.pupBulletPoint} />
+                                            <AppText style={{color: pup.color}}>{ pup.name }</AppText>
+                                        </View>
+                                    )}
+                                </ScrollView>
+                            </>
+                        }
 
-                        {/* list of allergic pups */}
-                        <View style={styles.pupWrapper}>
-                            {allergicPups.map((pup, index) => 
-                                <View key={index} style={styles.pupRow}>
-                                    <MaterialCommunityIcons color={pup.color} name='circle' size={7} style={styles.pupBulletPoint} />
-                                    <AppText style={{color: pup.color}}>{ pup.name }</AppText>
-                                </View>
-                            )}
-                        </View>
+                        {activePup !== -1 &&
+                            <AppText>
+                                {allPups[activePup].name} is allergic to { activeIngredient.name }.
+                            </AppText>
+                        }
                     </ScrollView>
                 </View>
             </View>
@@ -274,7 +282,7 @@ function AnalysisScreen() {
                     </View>
 
                     {/* information */}
-                    <ScrollView contentContainerStyle={styles.modalTextWrapper}>
+                    <ScrollView bounces={false} contentContainerStyle={styles.modalTextWrapper}>
                         <AppText>
                             {activeIngredient.description}
                         </AppText>
@@ -303,7 +311,7 @@ function AnalysisScreen() {
                     </View>
 
                     {/* information */}
-                    <ScrollView contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
+                    <ScrollView bounces={false} contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
                         <AppText>
                             We don't know the toxicity level of this ingredient. Apologies!
                         </AppText>
@@ -311,6 +319,45 @@ function AnalysisScreen() {
                 </View>
             </View>
         );
+    }
+
+    const renderPickerModal = () => {
+        return (
+            <ScrollView bounces={false} style={styles.pickerModal}>
+                <FlatList
+                    contentContainerStyle={styles.pickerModalContent}
+                    scrollEnabled={false}
+                    data={allPups}
+                    keyExtractor={(item, index) => key = index}
+                    ListHeaderComponent={() =>
+                        <TouchableOpacity
+                            style={[styles.pickerButton, {backgroundColor: activePup === -1 ? rgba(colors.text, 0.05) : colors.shade}]}
+                            onPress={() => {
+                                setActivePup(-1);
+                                setPickerModalVisible(false);
+                            }}
+                        >
+                            <AppText weight={activePup === -1 ? 400 : 100}>All Pups</AppText>
+                        </TouchableOpacity>
+                    }
+                    renderItem={({ item, index }) =>
+                        <TouchableOpacity
+                            style={[styles.pickerButton, {backgroundColor: activePup === index ? rgba(item.color, 0.05) : colors.shade}]}
+                            onPress={() => {
+                                setActivePup(index);
+                                setPickerModalVisible(false);
+                            }}
+                        >
+                            <AppText 
+                                style={{color: item.color}}
+                                weight={activePup === index ? 400 : 100}
+                            >
+                                { item.name }
+                            </AppText>
+                        </TouchableOpacity>
+                } />
+            </ScrollView>
+        )
     }
 
     return (
@@ -339,11 +386,33 @@ function AnalysisScreen() {
                 </ReactNativeModal>
             } 
 
+            {/* picker modal */}
+            <ReactNativeModal animationIn={'slideInUp'} animationOut={'slideOutDown'} isVisible={pickerModalVisible} backdropColor={colors.shade} backdropOpacity={0.3} onBackdropPress={() => setPickerModalVisible(false)}>
+                { renderPickerModal() }
+            </ReactNativeModal>
+
             {/* header */}
             <AppText style={styles.headerText} weight={500}>Ingredients</AppText>
 
             {/* picker */}
-            <View style={{height: 50, borderRadius: 50, backgroundColor: colors.shade, marginLeft: -10, marginRight: -10}} />
+            <TouchableWithoutFeedback onPress={() => setPickerModalVisible(true)}>
+                <View style={styles.pickerSelect}>
+                    {activePup === -1 &&
+                        <AppText style={styles.pickerSelectText}>All Pups</AppText>
+                    }
+                    {activePup !== -1 &&
+                        <AppText style={[styles.pickerSelectText, {color: allPups[activePup].color}]}>
+                            {allPups[activePup].name}
+                        </AppText>
+                    }
+
+                    <MaterialCommunityIcons
+                        name={"chevron-down"}
+                        size={20}
+                        style={[styles.pickerSelectIcon, {color: activePup === -1 ? colors.text : allPups[activePup].color}]}
+                    />
+                </View>
+            </TouchableWithoutFeedback>
 
             {/* analysis */}
             <View style={styles.ingredientsList}>
@@ -397,10 +466,10 @@ const styles = StyleSheet.create({
         textTransform: 'capitalize', 
     },
     modalTextWrapper: {
-        maxHeight: 220,
         paddingBottom: 20,
         paddingHorizontal: 25,
         paddingTop: 15,
+        flexShrink: 1,
         width: '100%'
     },
     modalWrapper: {
@@ -408,6 +477,45 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         paddingBottom: 80
+    },
+    pickerSelect: {
+        borderRadius: 50,
+        backgroundColor: colors.shade,
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        marginLeft: -10,
+        marginRight: -10
+    },
+    pickerSelectIcon: {
+        marginVertical: 'auto',
+        marginLeft: 'auto'
+    },
+    pickerSelectText: {
+        fontSize: 19
+    },
+    pickerModal: {
+        backgroundColor: colors.shade,
+        borderRadius: 35,
+        minHeight: 130,
+        maxHeight: 250,
+        width: '100%',
+        position: 'absolute',
+        bottom: 0
+    },
+    pickerButton: {
+        width: '100%',
+        paddingHorizontal: 25,
+        paddingVertical: 10,
+    },
+    pickerModalContent: {
+        height: '100%',
+        width: '100%', 
+        paddingVertical: 10
+    },
+    pickerModalWrapper: {
+        justifyContent: 'flex-end',
+        ...StyleSheet.absoluteFillObject
     },
     pupBulletPoint: {
         marginRight: 7,
@@ -419,6 +527,7 @@ const styles = StyleSheet.create({
         marginTop: 3
     },
     pupWrapper: {
+        maxHeight: 150,
         paddingHorizontal: 10,
         paddingTop: 7
     },
