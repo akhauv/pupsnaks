@@ -10,12 +10,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import supabase from '../config/supabase';
 import { useFocusEffect } from '@react-navigation/native';
 
-allIngredientsTemp = ['lorem', 'avocado spread', 'ipsum', 'apricot juice', 'dark chocolate', 'coffee bean extract', 'green tea leaves', 'dolor', 'sit', 'amet']
+allIngredientsTemp = ['lorem', 'avocado spread', 'ipsum', 'apricot juice', 'dark chocolate', 'coffee bean extract', 'green tea leaves', 'dolor', 'sit', 'amet', 'peanut butter']
 
 const allPups = [pups.Bear, pups.Roxi, pups.Rooney];
 const toxicityLevels = ['safe', 'low', 'medium', 'high', 'conditional']
 
-function AnalysisScreen() {
+function AnalysisScreen() { 
     const [allIngredients, setAllIngredients] = useState(allIngredientsTemp);
     const [activeIngredient, setActiveIngredient] = useState();
     const [informationModalVisible, setInformationModalVisible] = useState(false); 
@@ -158,7 +158,7 @@ function AnalysisScreen() {
     }
 
     const renderAllergyModal = () => {
-        if (!allergyData || !activeIngredient || !isActiveAllergy(activeIngredient)) return;
+        if (!allergyData || !activeIngredient || !isActiveAllergy(activeIngredient)) return <></>;
 
         /* generate list of allergic pups */
         var allergicPups = [];
@@ -218,7 +218,8 @@ function AnalysisScreen() {
             <TouchableOpacity 
                 key={index}
                 onPress={() => {
-                    setActiveIngredient(item);
+                    const deepCopy = JSON.parse(JSON.stringify(item));
+                    setActiveIngredient(deepCopy); 
                 }}
                 style={styles.ingredient}>
                 <AppText 
@@ -232,7 +233,7 @@ function AnalysisScreen() {
     }
 
     const renderInformationModal = () => {
-        if (!activeIngredient) return; 
+        if (!activeIngredient) return <></>; 
 
         return (
             <View style={styles.modalWrapper}>
