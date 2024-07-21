@@ -58,10 +58,12 @@ function AnalysisScreen() {
                         ingredientStructure.root = ingredientData.name;
                         ingredientStructure.alias = ingredientData.alias;
                         ingredientStructure.toxicity = ingredientData.toxicity;
+                        ingredientStructure.description = ingredientData.description;
                     } else {
                         ingredientStructure.root = null;
                         ingredientStructure.alias = null;
                         ingredientStructure.toxicity = 'unknown';
+                        ingredientStructure.description = null;
                     }
 
                     return ingredientStructure;
@@ -115,9 +117,7 @@ function AnalysisScreen() {
     }, [data]);
 
     useEffect(() => {
-        console.log("using effect");
         if (!activeIngredient) return;
-        console.log("active Ingredient: ", activeIngredient);
         if (isActiveAllergy(activeIngredient)) setAllergyModalVisible(true);
         else if (activeIngredient.toxicity && activeIngredient.toxicity === 'unknown') setUnknownModalVisible(true);
         else setInformationModalVisible(true); 
@@ -148,13 +148,13 @@ function AnalysisScreen() {
     }
 
     const fetchDescription = async (alias) => {
-        const {desc, error} = await supabase
+        const {data, error} = await supabase
             .from('toxicities')
             .select('description')
             .eq('alias', alias);
         
         if (error) return null;
-        return data;
+        return data[description];
     }
 
     const renderAllergyModal = () => {
@@ -218,10 +218,7 @@ function AnalysisScreen() {
             <TouchableOpacity 
                 key={index}
                 onPress={() => {
-                    console.log("item", item); 
-                    console.log("triggering active ingredient"); 
                     setActiveIngredient(item);
-                    console.log("set active ingredient");
                 }}
                 style={styles.ingredient}>
                 <AppText 
@@ -278,22 +275,7 @@ function AnalysisScreen() {
                     {/* information */}
                     <ScrollView contentContainerStyle={styles.modalTextWrapper}>
                         <AppText>
-                            Linking requires a build-time setting `scheme`
-                            in the project's Expo config (app.config.js or
-                            app.json) for production apps, if it's left blank, 
-                            your app may crash. The scheme does not apply to 
-                            development in the Expo client but you should add 
-                            it as soon as you start working with Linking to avoid 
-                            creating a broken build. Learn more: https://docs.expo.
-                            dev/guides/linking/
-                            Linking requires a build-time setting `scheme`
-                            in the project's Expo config (app.config.js or
-                            app.json) for production apps, if it's left blank, 
-                            your app may crash. The scheme does not apply to 
-                            development in the Expo client but you should add 
-                            it as soon as you start working with Linking to avoid 
-                            creating a broken build. Learn more: https://docs.expo.
-                            dev/guides/linking/
+                            {activeIngredient.description}
                         </AppText>
                     </ScrollView>
                 </View>
