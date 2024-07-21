@@ -27,7 +27,7 @@ function index() {
     }
 
     return (
-        <HomeScreen />
+        <AnalysisScreen />
     );
 }
 

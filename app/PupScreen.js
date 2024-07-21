@@ -11,7 +11,7 @@ import * as Yup from 'yup';
 
 import { AppColorPicker, AppForm, AppText, FormField, Icon, Screen, SubmitButton } from '../components'
 import colors from '../config/colors';
-import navigation from '../config/navigation';
+import nav from '../config/nav';
 import pups from '../config/pups';
 
 /*
@@ -37,7 +37,7 @@ function PupScreen(name) {
     // remove later: temporary assignmetn
     name = "Bear";
     const [pup, setPup] = useState(pups[name]);                                     // current pup information
-    const menuOptions = [navigation.home, ...pupArray.filter(i => i.name != name)]  // dynamic menu containing other pups
+    const menuOptions = [nav.home, ...pupArray.filter(i => i.name != name)]  // dynamic menu containing other pups
 
     const [allergies, setAllergies] = useState(pup.allergies);                      // list of current pup allergies
     const [color, setColor] = useState(pup.color);                                  // pup color

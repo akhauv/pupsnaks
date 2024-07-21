@@ -3,13 +3,13 @@ export default {
         name: "Bear",
         color: "#9f4e1f",
         imageUri: null,
-        allergies: ["pork", "banans"]
+        allergies: ["pork", "banans", "tea", "lorem"]
     },
     Roxi: {
         name: "Roxi",
         color: "#4f6e68",
         imageUri: null,
-        allergies: ["friendship", "little kids"]
+        allergies: ["friendship", "little kids", "sit"]
     },
     Pumpkin: {
         name: "pumpkin",

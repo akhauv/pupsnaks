@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FlatList, StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
 
 import { AppText, Screen } from '../components';
-import navigation from '../config/navigation';
+import nav from '../config/nav';
 import colors from '../config/colors';
 import pups from '../config/pups';
 import ReactNativeModal from 'react-native-modal';
@@ -11,6 +11,7 @@ import supabase from '../config/supabase';
 import { useFocusEffect } from '@react-navigation/native';
 
 allIngredientsTemp = ['lorem', 'avocado spread', 'ipsum', 'apricot juice', 'dark chocolate', 'coffee bean extract', 'green tea leaves', 'dolor', 'sit', 'amet']
+
 // DELETE
 // const data = [{name: 'lorem', toxicity: 'unknown'},
 //               {name: 'ipsum', toxicity: 'high'}, 
@@ -64,76 +65,118 @@ function AnalysisScreen() {
     const [allergyModalVisible, setAllergyModalVisible] = useState(false);
     const [namesData, setNamesData] = useState();
     const [data, setData] = useState([])
+    const [allergyData, setAllergyData] = useState({})
 
-    /* load all names beforehand for time efficiency and initialize realtime subscirption */
+    /* fetch names data */
     useEffect(() => {
-        // Handle data changes in the substances table
-        const handleUpdate = (payload) => {
-            // Update local state with new data
-            setNamesData(payload.new)
-        };
-    
-        // Set up real-time subscription
-        const subscription = supabase
-            .from('substances')
-            .on('*', handleUpdate) // Listen for all changes (inserts, updates, deletes)
-            .subscribe();
-    
-        // Fetch names data
         const fetchNamesData = async () => {
             const { data: initialData, error } = await supabase
                 .from('substances')
-                .select('names');
+                .select('name');
             if (error) {
-                setData([]);
+                setNamesData([]);
+                console.error(error.message);
             } else {
-                setData(initialData);
+                const formattedData = initialData.map(ingredient => ingredient.name);
+                setNamesData(formattedData);
             }
         };
-    
+
         fetchNamesData();
-    
-        // Cleanup on component unmount
-        return () => {
-          supabase.removeSubscription(subscription);
-        };
     }, []);
 
-    /* create data map */
+    /* configure data when namesData or allIngredients changes */
     useEffect(() => {
+        if (!namesData) return;
+
         const configureData = async () => {
             try {
-                for (ingredient in allIngredients) {
-                    const ingredientData = await(fetchData(ingredient));
-                    const ingredientStructure = {
-                        name: ingredient,
-                        alias: ingredientData.alias,
-                        toxicity: ingredientData.toxicity
-                    };
-                    setData([...data, ingredientStructure]);
-                }
+                const fetchedData = await Promise.all(allIngredients.map(async (ingredient) => {
+                    const ingredientData = await fetchData(ingredient);
+                    const ingredientStructure = { name: ingredient };
+
+                    if (ingredientData) {
+                        ingredientStructure.root = ingredientData.name;
+                        ingredientStructure.alias = ingredientData.alias;
+                        ingredientStructure.toxicity = ingredientData.toxicity;
+                    } else {
+                        ingredientStructure.root = null;
+                        ingredientStructure.alias = null;
+                        ingredientStructure.toxicity = 'unknown';
+                    }
+
+                    return ingredientStructure;
+                }));
+
+                setData(fetchedData);
             } catch (error) {
+                console.error(error.message);
                 console.error("failure to fetch data");
             }
-        }
+        };
 
         configureData();
-    }, [allIngredients]);
+    }, [namesData, allIngredients]);
+
+    /* configure allergies when data changes */
+    useEffect(() => {
+        if (!data) return;
+
+        const configureAllergies = () => {
+            const newAllergyData = {};
+
+            /* loop through all existing ingredients data */ 
+            for (const ingredient of data) {
+                const root = ingredient.root ? ingredient.root : ingredient.name;
+                const affectedPups = [];
+
+                /* loop through each pup */
+                for (let i = 0; i < allPups.length; i++) {
+                    const thisPup = allPups[i];
+
+                    /* loop through each allergy and see if root is in the allergy */
+                    for (const allergy of thisPup.allergies) {
+                        if (allergy.indexOf(root) !== -1) {
+                            affectedPups.push(i);
+                            break;
+                        }
+                    }
+                }
+
+                /* add affected pup and allergy to allergies data */
+                if (affectedPups.length > 0) {
+                    newAllergyData[ingredient.name] = affectedPups;
+                }
+            } 
+
+            setAllergyData(newAllergyData);
+        };
+
+        configureAllergies();
+    }, [data]);
 
     const fetchData = async (name) => {
         /* get matching general name to query and sort by matching length */ 
         const matchingNames = namesData
-            .filter(posName => name.includes(posName))
+            .filter((substance) => name.indexOf(substance) !== -1)
             .sort((a, b) => b.length - a.length);
         if (matchingNames.length === 0) return null;
         const nameToQuery = matchingNames[0];
 
         /* query name with custom function and return alias, toxicity, and description. */
         const {data, error} = await supabase
-            .rpc('get_toxicity_details', {nameToQuery});
+            .rpc('get_toxicity_details', {q_name: nameToQuery});
 
-        if (error) return null;
-        return data;
+        if (error) {
+            console.error(error.message);
+            return null;
+        }
+
+        /* add an extra name field */
+        dataDict = data[0];
+        dataDict.name = nameToQuery;
+        
+        return dataDict;
     }
 
     const fetchDescription = async (alias) => {
@@ -308,7 +351,7 @@ function AnalysisScreen() {
 
     return (
         <Screen 
-            options={[navigation.camera, navigation.search, navigation.home]}
+            options={[nav.camera, nav.search, nav.home]}
             style={styles.screenStyle}
         >
             {/* allergy modal */}

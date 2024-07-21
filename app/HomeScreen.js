@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 
 import { AppColorPicker, AppText, AppForm, Icon, FormField, Screen, SubmitButton } from '../components'
 import colors from '../config/colors.js';
-import navigation from '../config/navigation.js';
+import nav from '../config/nav.js';
 import pups from '../config/pups.js';
 
 /*
@@ -23,7 +23,7 @@ const data=[pups.Bear, pups.Roxi, pups.Rooney];
 /*
  *  Menu options
  */
-const menuOptions = [navigation.camera, navigation.search]
+const menuOptions = [nav.camera, nav.search]
 /*
  *  Other Constants
  */
