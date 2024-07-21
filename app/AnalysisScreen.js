@@ -19,7 +19,7 @@ function AnalysisScreen() {
     const [allIngredients, setAllIngredients] = useState(allIngredientsTemp);
     const [activeIngredient, setActiveIngredient] = useState();
     const [informationModalVisible, setInformationModalVisible] = useState(false); 
-    const [unknownModalVisible, setUnknownModalVisible] = useState(true); 
+    const [unknownModalVisible, setUnknownModalVisible] = useState(false); 
     const [allergyModalVisible, setAllergyModalVisible] = useState(false);
     const [namesData, setNamesData] = useState();
     const [data, setData] = useState([])
@@ -114,6 +114,15 @@ function AnalysisScreen() {
         configureAllergies();
     }, [data]);
 
+    useEffect(() => {
+        console.log("using effect");
+        if (!activeIngredient) return;
+        console.log("active Ingredient: ", activeIngredient);
+        if (isActiveAllergy(activeIngredient)) setAllergyModalVisible(true);
+        else if (activeIngredient.toxicity && activeIngredient.toxicity === 'unknown') setUnknownModalVisible(true);
+        else setInformationModalVisible(true); 
+    }, [activeIngredient])
+
     const fetchData = async (name) => {
         /* get matching general name to query and sort by matching length */ 
         const matchingNames = namesData
@@ -149,6 +158,8 @@ function AnalysisScreen() {
     }
 
     const renderAllergyModal = () => {
+        if (!allergyData || !activeIngredient || !isActiveAllergy(activeIngredient)) return;
+
         /* generate list of allergic pups */
         var allergicPups = [];
         for (var pupInd of allergyData[activeIngredient.name]) {
@@ -207,15 +218,15 @@ function AnalysisScreen() {
             <TouchableOpacity 
                 key={index}
                 onPress={() => {
+                    console.log("item", item); 
+                    console.log("triggering active ingredient"); 
                     setActiveIngredient(item);
-                    if (isActiveAllergy(item)) setAllergyModalVisible(true);
-                    else if (item.toxicity === 'unknown') setUnknownModalVisible(true);
-                    else setInformationModalVisible(true); 
+                    console.log("set active ingredient");
                 }}
                 style={styles.ingredient}>
                 <AppText 
                     style={{color: isActiveAllergy(item) ? colors['allergy'] : colors[item.toxicity]}}
-                    weight={item.toxicity === 'unknown' ? 100 : 300}
+                    weight={(item.toxicity === 'unknown' && !isActiveAllergy(item)) ? 100 : 300}
                 >
                     { item.name }
                 </AppText>
@@ -224,6 +235,8 @@ function AnalysisScreen() {
     }
 
     const renderInformationModal = () => {
+        if (!activeIngredient) return; 
+
         return (
             <View style={styles.modalWrapper}>
                 <View style={styles.modal}>
@@ -341,7 +354,7 @@ function AnalysisScreen() {
                 <ReactNativeModal animationIn={'fadeInUp'} animationOut={'fadeOutDown'} backdropColor={colors.unknown} backdropOpacity={0.55} isVisible={unknownModalVisible}>
                     { renderUnknownModal() }
                 </ReactNativeModal>
-            }
+            } 
 
             {/* header */}
             <AppText style={styles.headerText} weight={500}>Ingredients</AppText>
