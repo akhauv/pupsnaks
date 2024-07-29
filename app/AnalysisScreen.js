@@ -12,6 +12,7 @@ import pups from '../config/pups';
 import ReactNativeModal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import supabase from '../config/supabase';
+import { Pulse } from 'react-native-animated-spinkit';
 
 const allPups = [pups.Bear, pups.Roxi, pups.Rooney];
 const toxicityLevels = ['safe', 'low', 'medium', 'high', 'conditional'];
@@ -19,10 +20,9 @@ const toxicityLevels = ['safe', 'low', 'medium', 'high', 'conditional'];
 // DELETE
 const imgUri = '../assets/images/sample_1.jpeg';
 const serverAddress = '18.218.56.242'; 
-const ingredientsTemp = ['gluten free flour blend', 'organic light apricot flour', 'gluten free tea flower', 'chocolate flour', 'non gmp sunflower oil', 'organic light peanut brown brown brown borwn sugar'];
 
 function AnalysisScreen() { 
-    const [allIngredients, setAllIngredients] = useState(ingredientsTemp);
+    const [allIngredients, setAllIngredients] = useState();
     const [activeIngredient, setActiveIngredient] = useState();
     const [informationModalVisible, setInformationModalVisible] = useState(false); 
     const [unknownModalVisible, setUnknownModalVisible] = useState(false); 
@@ -32,6 +32,7 @@ function AnalysisScreen() {
     const [data, setData] = useState([])
     const [allergyData, setAllergyData] = useState({})
     const [activePup, setActivePup] = useState(-1); 
+    const [isLoading, setIsLoading] = useState(true); 
 
     const rgba = (hex, alpha) => {
         const r = parseInt(hex.slice(1, 3), 16);
@@ -42,36 +43,39 @@ function AnalysisScreen() {
 
     /* load image and send to API */
 
-    // useEffect(() => {
-    //     const getIngredientsList = async () => {            
-    //         try {
-    //             // ensure image exists 
-    //             const loadedImage = Asset.fromModule(require(imgUri));
-    //             await loadedImage.downloadAsync();
+    useEffect(() => {
+        const getIngredientsList = async () => {    
+            setIsLoading(true);
 
-    //             const form = new FormData();
-    //             form.append('file', {
-    //                 uri: loadedImage.localUri,
-    //                 type: 'image/jpeg',
-    //                 name: 'image',
-    //             });    
+            try {
+                // ensure image exists 
+                const loadedImage = Asset.fromModule(require(imgUri));
+                await loadedImage.downloadAsync();
+
+                const form = new FormData();
+                form.append('file', {
+                    uri: loadedImage.localUri,
+                    type: 'image/jpeg',
+                    name: 'image',
+                });    
                 
-    //             const response = await axios.post("http://" + serverAddress + ":5000/extract", form, {
-    //                 headers: {
-    //                     'Content-Type': form.type,
-    //                 }
-    //             })
+                const response = await axios.post("http://" + serverAddress + ":5000/extract", form, {
+                    headers: {
+                        'Content-Type': form.type,
+                    }
+                })
 
-    //             const { ingredients } = response.data;
-    //             const ingredientsArr = ingredients.split(', ');
-    //             setAllIngredients(ingredientsArr)
-    //         } catch (error) {
-    //             console.log(error);
-    //         }
-    //     }
+                const { ingredients } = response.data;
+                const ingredientsArr = ingredients.split(', ');
+                setAllIngredients(ingredientsArr);
+                setIsLoading(false);
+            } catch (error) {
+                console.log(error);
+            }
+        }
   
-    //     getIngredientsList();
-    // }, []);
+        getIngredientsList();
+    }, []);
 
     /* fetch names data */
     useEffect(() => {
@@ -192,6 +196,17 @@ function AnalysisScreen() {
         dataDict.name = nameToQuery;
         
         return dataDict;
+    }
+
+    const renderLoadingModal = () => {
+        return (
+            <View style={[styles.modal, {height: 120, justifyContent: 'center'}]}>
+                <AppText style={styles.loadingText}>
+                    Extracting Text...
+                </AppText>
+                <Pulse size={30} color={colors.primary} />
+            </View>
+        );
     }
 
     const renderAllergyModal = () => {
@@ -406,6 +421,16 @@ function AnalysisScreen() {
             options={[nav.camera, nav.search, nav.home]}
             style={styles.screenStyle}
         >
+            {/* loading modal */}
+            <ReactNativeModal
+                animationOut={'fadeOut'}
+                backdropColor={colors.unknown}
+                backdropOpacity={0.55}
+                isVisible={isLoading}
+            >
+                { renderLoadingModal() }
+            </ReactNativeModal>
+
             {/* allergy modal */}
             {activeIngredient && 
                 <ReactNativeModal
@@ -515,7 +540,14 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         lineHeight: 23,
         width: '100%',
-        paddingBottom: 40
+        paddingBottom: 40,
+        textAlign: 'justify'
+    },
+    loadingText: {
+        color: colors.primary,
+        textTransform: 'lowercase',
+        textAlign: 'center',
+        marginBottom: 10
     },
     modal: {
         alignItems: 'center',
