@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, StyleSheet, TouchableOpacity, View, ScrollView, TouchableWithoutFeedback } from 'react-native';
+import { FlatList, StyleSheet, TouchableOpacity, View, ScrollView, TouchableWithoutFeedback, Image, ImageBackgroundBase, Text } from 'react-native';
+import axios from 'axios';
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
+import FormData from 'form-data';
 
 import { AppText, Screen } from '../components';
 import nav from '../config/nav';
@@ -8,15 +12,17 @@ import pups from '../config/pups';
 import ReactNativeModal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import supabase from '../config/supabase';
-import { useFocusEffect } from '@react-navigation/native';
-
-allIngredientsTemp = ['lorem', 'avocado spread', 'ipsum', 'apricot juice', 'dark chocolate', 'coffee bean extract', 'green tea leaves', 'dolor', 'sit', 'amet', 'peanut butter']
 
 const allPups = [pups.Bear, pups.Roxi, pups.Rooney];
-const toxicityLevels = ['safe', 'low', 'medium', 'high', 'conditional']
+const toxicityLevels = ['safe', 'low', 'medium', 'high', 'conditional'];
+
+// DELETE
+const imgUri = '../assets/images/sample_1.jpeg';
+const serverAddress = '18.218.56.242'; 
+const ingredientsTemp = ['gluten free flour blend', 'organic light apricot flour', 'gluten free tea flower', 'chocolate flour', 'non gmp sunflower oil', 'organic light peanut brown brown brown borwn sugar'];
 
 function AnalysisScreen() { 
-    const [allIngredients, setAllIngredients] = useState(allIngredientsTemp);
+    const [allIngredients, setAllIngredients] = useState(ingredientsTemp);
     const [activeIngredient, setActiveIngredient] = useState();
     const [informationModalVisible, setInformationModalVisible] = useState(false); 
     const [unknownModalVisible, setUnknownModalVisible] = useState(false); 
@@ -33,6 +39,39 @@ function AnalysisScreen() {
         const b = parseInt(hex.slice(5, 7), 16);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     };
+
+    /* load image and send to API */
+
+    // useEffect(() => {
+    //     const getIngredientsList = async () => {            
+    //         try {
+    //             // ensure image exists 
+    //             const loadedImage = Asset.fromModule(require(imgUri));
+    //             await loadedImage.downloadAsync();
+
+    //             const form = new FormData();
+    //             form.append('file', {
+    //                 uri: loadedImage.localUri,
+    //                 type: 'image/jpeg',
+    //                 name: 'image',
+    //             });    
+                
+    //             const response = await axios.post("http://" + serverAddress + ":5000/extract", form, {
+    //                 headers: {
+    //                     'Content-Type': form.type,
+    //                 }
+    //             })
+
+    //             const { ingredients } = response.data;
+    //             const ingredientsArr = ingredients.split(', ');
+    //             setAllIngredients(ingredientsArr)
+    //         } catch (error) {
+    //             console.log(error);
+    //         }
+    //     }
+  
+    //     getIngredientsList();
+    // }, []);
 
     /* fetch names data */
     useEffect(() => {
@@ -227,9 +266,13 @@ function AnalysisScreen() {
                     const deepCopy = JSON.parse(JSON.stringify(item));
                     setActiveIngredient(deepCopy); 
                 }}
-                style={styles.ingredient}>
+                style={styles.ingredient}
+            >
                 <AppText 
-                    style={{color: isActiveAllergy(item) ? colors['allergy'] : colors[item.toxicity]}}
+                    style={{
+                        color: isActiveAllergy(item) ? colors['allergy'] : colors[item.toxicity],
+                        flexWrap: 'wrap',
+                    }}
                     weight={(item.toxicity === 'unknown' && !isActiveAllergy(item)) ? 100 : 300}
                 >
                     { item.name }
@@ -434,8 +477,8 @@ function AnalysisScreen() {
                         style={[styles.pickerSelectIcon, {color: activePup === -1 ? colors.text : allPups[activePup].color}]}
                     />
                 </View>
-            </TouchableWithoutFeedback>
-
+            </TouchableWithoutFeedback>        
+        
             {/* analysis */}
             <View style={styles.ingredientsList}>
                 {data.map((item, index) => renderItem(item, index))}
