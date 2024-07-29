@@ -214,7 +214,7 @@ function AnalysisScreen() {
                     </TouchableOpacity>
 
                     {/* label */}
-                    <AppText style={styles.modalHeaderText} weight={500}>
+                    <AppText style={styles.modalHeaderText} numberOfLines={2} weight={500}>
                         { activeIngredient.name }
                     </AppText>
                 </View>
@@ -260,24 +260,28 @@ function AnalysisScreen() {
 
     const renderItem = (item, index) => {
         return (
-            <TouchableOpacity 
-                key={index}
-                onPress={() => {
-                    const deepCopy = JSON.parse(JSON.stringify(item));
-                    setActiveIngredient(deepCopy); 
-                }}
-                style={styles.ingredient}
-            >
+            <AppText key={index}>
                 <AppText 
                     style={{
                         color: isActiveAllergy(item) ? colors['allergy'] : colors[item.toxicity],
                         flexWrap: 'wrap',
+                        flexShrink: 1,
                     }}
                     weight={(item.toxicity === 'unknown' && !isActiveAllergy(item)) ? 100 : 300}
+                    suppressHighlighting={true}
+
+                    onPress={() => {
+                        const deepCopy = JSON.parse(JSON.stringify(item));
+                        setActiveIngredient(deepCopy); 
+                    }}
                 >
                     { item.name }
                 </AppText>
-            </TouchableOpacity>
+
+                {index < data.length - 1 &&
+                    <AppText style={{color: isActiveAllergy(item) ? colors['allergy'] : colors[item.toxicity]}}>, </AppText>
+                }
+            </AppText>
         );
     }
 
@@ -295,7 +299,7 @@ function AnalysisScreen() {
                     </TouchableOpacity>
 
                     {/* label */}
-                    <AppText style={styles.modalHeaderText} weight={500}>
+                    <AppText style={styles.modalHeaderText} numberOfLines={2} weight={500}>
                         { activeIngredient.name }
                     </AppText>
                 </View>
@@ -343,7 +347,7 @@ function AnalysisScreen() {
                     </TouchableOpacity>
 
                     {/* label */}
-                    <AppText style={styles.modalHeaderText} weight={500}>
+                    <AppText style={styles.modalHeaderText} numberOfLines={2} weight={500}>
                         { activeIngredient.name }
                     </AppText>
                 </View>
@@ -480,9 +484,11 @@ function AnalysisScreen() {
             </TouchableWithoutFeedback>        
         
             {/* analysis */}
-            <View style={styles.ingredientsList}>
-                {data.map((item, index) => renderItem(item, index))}
-            </View>
+            <ScrollView bounces={false} style={styles.ingredientsList} showsVerticalScrollIndicator={false}>
+                <Text style={styles.listWrapper}>
+                    {data.map((item, index) => renderItem(item, index))}
+                </Text>
+            </ScrollView>
         </Screen>
     );
 }
@@ -493,12 +499,10 @@ const styles = StyleSheet.create({
         paddingVertical: 1
     },
     ingredientsList: {
-        alignContent: 'space-between',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
         marginTop: 30,
         overflow: 'scroll',
-        width: '100%'
+        width: '100%',
+        marginBottom: 60,
     },
     headerText: {
         color: colors.secondary,
@@ -506,6 +510,12 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         marginTop: 20,
         textTransform: 'uppercase'
+    },
+    listWrapper: {
+        flexWrap: 'wrap',
+        lineHeight: 23,
+        width: '100%',
+        paddingBottom: 40
     },
     modal: {
         alignItems: 'center',
@@ -525,12 +535,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         paddingVertical: 15,
-        width: '100%'
+        width: '100%',
     },
     modalHeaderText: {
         color: colors.light,
         fontSize: 20,
-        textTransform: 'capitalize', 
+        textTransform: 'capitalize',
+        textAlign: 'center',
+        width: '69.8%'
     },
     modalTextWrapper: {
         paddingBottom: 20,
