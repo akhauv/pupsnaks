@@ -5,6 +5,8 @@ import fonts from '../config/fonts';
 import AnalysisScreen from './AnalysisScreen';
 import Pups from '../config/pups';
 import HomeScreen from './HomeScreen.js'
+import PupScreen from './PupScreen.js';
+import CameraScreen from './CameraScreen.js';
 
 function index() {
     const [isReady, setIsReady] = useState(false);

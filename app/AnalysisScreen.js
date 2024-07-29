@@ -21,11 +21,11 @@ function AnalysisScreen() {
     const [informationModalVisible, setInformationModalVisible] = useState(false); 
     const [unknownModalVisible, setUnknownModalVisible] = useState(false); 
     const [allergyModalVisible, setAllergyModalVisible] = useState(false);
+    const [pickerModalVisible, setPickerModalVisible] = useState(false)
     const [namesData, setNamesData] = useState();
     const [data, setData] = useState([])
     const [allergyData, setAllergyData] = useState({})
     const [activePup, setActivePup] = useState(-1); 
-    const [pickerModalVisible, setPickerModalVisible] = useState(false)
 
     const rgba = (hex, alpha) => {
         const r = parseInt(hex.slice(1, 3), 16);
@@ -54,7 +54,7 @@ function AnalysisScreen() {
 
     /* configure data when namesData or allIngredients changes */
     useEffect(() => {
-        if (!namesData) return;
+        if (!namesData || !allIngredients) return;
 
         const configureData = async () => {
             try {
@@ -165,49 +165,47 @@ function AnalysisScreen() {
         }
 
         return (
-            <View style={styles.modalWrapper}>
-                <View style={styles.modal}>
+            <View style={styles.modal}>
 
-                    {/* header */}
-                    <View style={[styles.modalHeader, {backgroundColor: colors.allergy}]}>
-                        {/* close button */}
-                        <TouchableOpacity style={styles.modalExit} onPress={() => setAllergyModalVisible(false)}>
-                            <MaterialCommunityIcons color={colors.light} name="close" size={25} />
-                        </TouchableOpacity>
+                {/* header */}
+                <View style={[styles.modalHeader, {backgroundColor: colors.allergy}]}>
+                    {/* close button */}
+                    <TouchableOpacity style={styles.modalExit} onPress={() => setAllergyModalVisible(false)}>
+                        <MaterialCommunityIcons color={colors.light} name="close" size={25} />
+                    </TouchableOpacity>
 
-                        {/* label */}
-                        <AppText style={styles.modalHeaderText} weight={500}>
-                            { activeIngredient.name }
-                        </AppText>
-                    </View>
-
-                    {/* information */}
-                    <ScrollView bounces={false} contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
-                        {activePup === -1 &&
-                            <>
-                                <AppText>
-                                    The following pups are allergic to { activeIngredient.name }:
-                                </AppText>
-                                
-                                {/* list of allergic pups */}
-                                <ScrollView bounces={false} style={styles.pupWrapper}>
-                                    {allergicPups.map((pup, index) => 
-                                        <View key={index} style={styles.pupRow}>
-                                            <MaterialCommunityIcons color={pup.color} name='circle' size={7} style={styles.pupBulletPoint} />
-                                            <AppText style={{color: pup.color}}>{ pup.name }</AppText>
-                                        </View>
-                                    )}
-                                </ScrollView>
-                            </>
-                        }
-
-                        {activePup !== -1 &&
-                            <AppText>
-                                {allPups[activePup].name} is allergic to { activeIngredient.name }.
-                            </AppText>
-                        }
-                    </ScrollView>
+                    {/* label */}
+                    <AppText style={styles.modalHeaderText} weight={500}>
+                        { activeIngredient.name }
+                    </AppText>
                 </View>
+
+                {/* information */}
+                <ScrollView bounces={false} contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
+                    {activePup === -1 &&
+                        <>
+                            <AppText>
+                                The following pups are allergic to { activeIngredient.name }:
+                            </AppText>
+                            
+                            {/* list of allergic pups */}
+                            <ScrollView bounces={false} style={styles.pupWrapper}>
+                                {allergicPups.map((pup, index) => 
+                                    <View key={index} style={styles.pupRow}>
+                                        <MaterialCommunityIcons color={pup.color} name='circle' size={7} style={styles.pupBulletPoint} />
+                                        <AppText style={{color: pup.color}}>{ pup.name }</AppText>
+                                    </View>
+                                )}
+                            </ScrollView>
+                        </>
+                    }
+
+                    {activePup !== -1 &&
+                        <AppText>
+                            {allPups[activePup].name} is allergic to { activeIngredient.name }.
+                        </AppText>
+                    }
+                </ScrollView>
             </View>
         );
     }
@@ -244,79 +242,75 @@ function AnalysisScreen() {
         if (!activeIngredient) return <></>; 
 
         return (
-            <View style={styles.modalWrapper}>
-                <View style={styles.modal}>
+            <View style={styles.modal}>
 
-                    {/* header */}
-                    <View style={[styles.modalHeader, {backgroundColor: colors[activeIngredient.toxicity]}]}>
-                        {/* close button */}
-                        <TouchableOpacity style={styles.modalExit} onPress={() => setInformationModalVisible(false)}>
-                            <MaterialCommunityIcons color={colors.light} name="close" size={25} />
-                        </TouchableOpacity>
+                {/* header */}
+                <View style={[styles.modalHeader, {backgroundColor: colors[activeIngredient.toxicity]}]}>
+                    {/* close button */}
+                    <TouchableOpacity style={styles.modalExit} onPress={() => setInformationModalVisible(false)}>
+                        <MaterialCommunityIcons color={colors.light} name="close" size={25} />
+                    </TouchableOpacity>
 
-                        {/* label */}
-                        <AppText style={styles.modalHeaderText} weight={500}>
-                            { activeIngredient.name }
-                        </AppText>
-                    </View>
-
-                    {/* toxicity key */}
-                    <View style={styles.toxicityRow}>
-                        {toxicityLevels.map((toxicityLevel, index) => 
-                            <View key={index} style={styles.toxicitySubRow}>
-
-                                {/* color circle indicating toxicity */}
-                                <View style={[
-                                    toxicityLevel === activeIngredient.toxicity ? styles.toxicityCueActive : styles.toxicityCue,
-                                    {backgroundColor: colors[toxicityLevel]}
-                                ]}/>
-
-                                {/* label containing current ingredient toxicity */}
-                                {toxicityLevel === activeIngredient.toxicity &&
-                                    <AppText style={[styles.toxicityCueText, {color: colors[toxicityLevel]}]}>
-                                        { toxicityLevel } {(toxicityLevel !== 'conditional') && (toxicityLevel !== 'safe') && "toxicity"}
-                                    </AppText>                                    
-                                }
-                            </View>
-                        )}
-                    </View>
-
-                    {/* information */}
-                    <ScrollView bounces={false} contentContainerStyle={styles.modalTextWrapper}>
-                        <AppText>
-                            {activeIngredient.description}
-                        </AppText>
-                    </ScrollView>
+                    {/* label */}
+                    <AppText style={styles.modalHeaderText} weight={500}>
+                        { activeIngredient.name }
+                    </AppText>
                 </View>
+
+                {/* toxicity key */}
+                <View style={styles.toxicityRow}>
+                    {toxicityLevels.map((toxicityLevel, index) => 
+                        <View key={index} style={styles.toxicitySubRow}>
+
+                            {/* color circle indicating toxicity */}
+                            <View style={[
+                                toxicityLevel === activeIngredient.toxicity ? styles.toxicityCueActive : styles.toxicityCue,
+                                {backgroundColor: colors[toxicityLevel]}
+                            ]}/>
+
+                            {/* label containing current ingredient toxicity */}
+                            {toxicityLevel === activeIngredient.toxicity &&
+                                <AppText style={[styles.toxicityCueText, {color: colors[toxicityLevel]}]}>
+                                    { toxicityLevel } {(toxicityLevel !== 'conditional') && (toxicityLevel !== 'safe') && "toxicity"}
+                                </AppText>                                    
+                            }
+                        </View>
+                    )}
+                </View>
+
+                {/* information */}
+                <ScrollView bounces={false} contentContainerStyle={styles.modalTextWrapper}>
+                    <AppText>
+                        {activeIngredient.description}
+                    </AppText>
+                </ScrollView>
             </View>
         );
     }
 
     const renderUnknownModal = () => {
         return (
-            <View style={styles.modalWrapper}>
-                <View style={styles.modal}>
+            <View style={styles.modal}>
 
-                    {/* header */}
-                    <View style={[styles.modalHeader, {backgroundColor: colors.unknown}]}>
-                        {/* close button */}
-                        <TouchableOpacity style={styles.modalExit} onPress={() => setUnknownModalVisible(false)}>
-                            <MaterialCommunityIcons color={colors.light} name="close" size={25} />
-                        </TouchableOpacity>
+                {/* header */}
+                <View style={[styles.modalHeader, {backgroundColor: colors.unknown}]}>
+                    {/* close button */}
+                    <TouchableOpacity style={styles.modalExit} onPress={() => setUnknownModalVisible(false)}>
+                        <MaterialCommunityIcons color={colors.light} name="close" size={25} />
+                    </TouchableOpacity>
 
-                        {/* label */}
-                        <AppText style={styles.modalHeaderText} weight={500}>
-                            { activeIngredient.name }
-                        </AppText>
-                    </View>
-
-                    {/* information */}
-                    <ScrollView bounces={false} contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
-                        <AppText>
-                            We don't know the toxicity level of this ingredient. Apologies!
-                        </AppText>
-                    </ScrollView>
+                    {/* label */}
+                    <AppText style={styles.modalHeaderText} weight={500}>
+                        { activeIngredient.name }
+                    </AppText>
                 </View>
+
+                {/* information */}
+                <ScrollView bounces={false} contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
+                    <AppText>
+                        We don't know the toxicity level of this ingredient. Apologies!
+                    </AppText>
+                </ScrollView>
             </View>
         );
     }
@@ -367,27 +361,55 @@ function AnalysisScreen() {
         >
             {/* allergy modal */}
             {activeIngredient && 
-                <ReactNativeModal animationIn={'fadeInUp'} animationOut={'fadeOutDown'} backdropColor={colors.allergy} backdropOpacity={0.55} isVisible={allergyModalVisible}>
+                <ReactNativeModal
+                    animationIn={'fadeInUp'}
+                    animationOut={'fadeOutDown'}
+                    backdropColor={colors.allergy}
+                    backdropOpacity={0.55}
+                    isVisible={allergyModalVisible}
+                    onBackdropPress={() => setAllergyModalVisible(false)}
+                >
                     { renderAllergyModal() }
                 </ReactNativeModal>
             }
 
             {/* information modal */}
             {activeIngredient && 
-                <ReactNativeModal animationIn={'fadeInUp'} animationOut={'fadeOutDown'} backdropColor={colors[activeIngredient.toxicity]} backdropOpacity={0.55} isVisible={informationModalVisible}>
+                <ReactNativeModal
+                    animationIn={'fadeInUp'}
+                    animationOut={'fadeOutDown'}
+                    backdropColor={colors[activeIngredient.toxicity]}
+                    backdropOpacity={0.55}
+                    isVisible={informationModalVisible}
+                    onBackdropPress={() => setInformationModalVisible(false)}
+                >
                     { renderInformationModal() }
                 </ReactNativeModal>
             }
 
             {/* unkown modal */}
             {activeIngredient &&
-                <ReactNativeModal animationIn={'fadeInUp'} animationOut={'fadeOutDown'} backdropColor={colors.unknown} backdropOpacity={0.55} isVisible={unknownModalVisible}>
+                <ReactNativeModal
+                    animationIn={'fadeInUp'}
+                    animationOut={'fadeOutDown'}
+                    backdropColor={colors.unknown}
+                    backdropOpacity={0.55}
+                    isVisible={unknownModalVisible}
+                    onBackdropPress={() => setUnknownModalVisible(false)}
+                >
                     { renderUnknownModal() }
                 </ReactNativeModal>
             } 
 
             {/* picker modal */}
-            <ReactNativeModal animationIn={'slideInUp'} animationOut={'slideOutDown'} isVisible={pickerModalVisible} backdropColor={colors.shade} backdropOpacity={0.3} onBackdropPress={() => setPickerModalVisible(false)}>
+            <ReactNativeModal
+                animationIn={'slideInUp'} 
+                animationOut={'slideOutDown'}
+                isVisible={pickerModalVisible} 
+                backdropColor={colors.shade}
+                backdropOpacity={0.3}
+                onBackdropPress={() => setPickerModalVisible(false)}
+            >
                 { renderPickerModal() }
             </ReactNativeModal>
 
@@ -447,7 +469,9 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         backgroundColor: colors.light,
         overflow: 'hidden',
-        width: '95%'
+        width: '95%',
+        marginHorizontal: 'auto',
+        marginBottom: 80
     },
     modalExit: {
         position: 'absolute', 
@@ -471,12 +495,6 @@ const styles = StyleSheet.create({
         paddingTop: 15,
         flexShrink: 1,
         width: '100%'
-    },
-    modalWrapper: {
-        alignItems: 'center',
-        flex: 1,
-        justifyContent: 'center',
-        paddingBottom: 80
     },
     pickerSelect: {
         borderRadius: 50,
