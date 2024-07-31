@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, StyleSheet, TouchableOpacity, View, ScrollView, TouchableWithoutFeedback, Image, ImageBackgroundBase, Text } from 'react-native';
+import { FlatList, StyleSheet, TouchableOpacity, View, ScrollView, TouchableWithoutFeedback, Text } from 'react-native';
 import axios from 'axios';
-import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
 import FormData from 'form-data';
+import { Pulse } from 'react-native-animated-spinkit';
 
-import { AppText, Screen } from '../components';
+import { AppText, Screen, AnalysisModal } from '../components';
 import nav from '../config/nav';
 import colors from '../config/colors';
 import pups from '../config/pups';
 import ReactNativeModal from 'react-native-modal';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import supabase from '../config/supabase';
-import { Pulse } from 'react-native-animated-spinkit';
 
 const allPups = [pups.Bear, pups.Roxi, pups.Rooney];
-const toxicityLevels = ['safe', 'low', 'medium', 'high', 'conditional'];
+// ingredientsTemp=['lorem', 'avocado spread', 'ipsum', 'flour', 'apricot juice', 'dark chocolate', 'coffee bean extract', 'green tea leaves', 'dolor', 'sit', 'amet', 'peanut butter']
 
 // DELETE
-const imgUri = '../assets/images/sample_1.jpeg';
-const serverAddress = '18.218.56.242'; 
+const imgUri = '../assets/images/sample_2.jpeg';
+const serverAddress = '18.116.71.40'; 
 
 function AnalysisScreen() { 
     const [allIngredients, setAllIngredients] = useState();
@@ -198,18 +197,7 @@ function AnalysisScreen() {
         return dataDict;
     }
 
-    const renderLoadingModal = () => {
-        return (
-            <View style={[styles.modal, {height: 120, justifyContent: 'center'}]}>
-                <AppText style={styles.loadingText}>
-                    Extracting Text...
-                </AppText>
-                <Pulse size={30} color={colors.primary} />
-            </View>
-        );
-    }
-
-    const renderAllergyModal = () => {
+    const renderAllergyContent = () => {
         if (!allergyData || !activeIngredient || !isActiveAllergy(activeIngredient)) return <></>;
 
         /* generate list of allergic pups */
@@ -219,48 +207,31 @@ function AnalysisScreen() {
         }
 
         return (
-            <View style={styles.modal}>
-
-                {/* header */}
-                <View style={[styles.modalHeader, {backgroundColor: colors.allergy}]}>
-                    {/* close button */}
-                    <TouchableOpacity style={styles.modalExit} onPress={() => setAllergyModalVisible(false)}>
-                        <MaterialCommunityIcons color={colors.light} name="close" size={25} />
-                    </TouchableOpacity>
-
-                    {/* label */}
-                    <AppText style={styles.modalHeaderText} numberOfLines={2} weight={500}>
-                        { activeIngredient.name }
-                    </AppText>
-                </View>
-
-                {/* information */}
-                <ScrollView bounces={false} contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
-                    {activePup === -1 &&
-                        <>
-                            <AppText>
-                                The following pups are allergic to { activeIngredient.name }:
-                            </AppText>
-                            
-                            {/* list of allergic pups */}
-                            <ScrollView bounces={false} style={styles.pupWrapper}>
-                                {allergicPups.map((pup, index) => 
-                                    <View key={index} style={styles.pupRow}>
-                                        <MaterialCommunityIcons color={pup.color} name='circle' size={7} style={styles.pupBulletPoint} />
-                                        <AppText style={{color: pup.color}}>{ pup.name }</AppText>
-                                    </View>
-                                )}
-                            </ScrollView>
-                        </>
-                    }
-
-                    {activePup !== -1 &&
-                        <AppText>
-                            {allPups[activePup].name} is allergic to { activeIngredient.name }.
-                        </AppText>
-                    }
+            <>
+            {activePup === -1 &&
+                <>
+                <AppText>
+                    The following pups are allergic to { activeIngredient.name }:
+                </AppText>
+                
+                {/* list of allergic pups */}
+                <ScrollView bounces={false} style={styles.pupWrapper}>
+                    {allergicPups.map((pup, index) => 
+                        <View key={index} style={styles.pupRow}>
+                            <MaterialCommunityIcons color={pup.color} name='circle' size={7} style={styles.pupBulletPoint} />
+                            <AppText style={{color: pup.color}}>{ pup.name }</AppText>
+                        </View>
+                    )}
                 </ScrollView>
-            </View>
+                </>
+            }
+
+            {activePup !== -1 &&
+                <AppText>
+                    {allPups[activePup].name} is allergic to { activeIngredient.name }.
+                </AppText>
+            }
+            </>    
         );
     }
 
@@ -300,81 +271,25 @@ function AnalysisScreen() {
         );
     }
 
-    const renderInformationModal = () => {
+    const renderInformationConent = () => {
         if (!activeIngredient) return <></>; 
 
         return (
-            <View style={styles.modal}>
+            <>
+            {activeIngredient.description &&
+                <AppText>
+                    {activeIngredient.description}
+                </AppText>
+            }
 
-                {/* header */}
-                <View style={[styles.modalHeader, {backgroundColor: colors[activeIngredient.toxicity]}]}>
-                    {/* close button */}
-                    <TouchableOpacity style={styles.modalExit} onPress={() => setInformationModalVisible(false)}>
-                        <MaterialCommunityIcons color={colors.light} name="close" size={25} />
-                    </TouchableOpacity>
-
-                    {/* label */}
-                    <AppText style={styles.modalHeaderText} numberOfLines={2} weight={500}>
-                        { activeIngredient.name }
-                    </AppText>
-                </View>
-
-                {/* toxicity key */}
-                <View style={styles.toxicityRow}>
-                    {toxicityLevels.map((toxicityLevel, index) => 
-                        <View key={index} style={styles.toxicitySubRow}>
-
-                            {/* color circle indicating toxicity */}
-                            <View style={[
-                                toxicityLevel === activeIngredient.toxicity ? styles.toxicityCueActive : styles.toxicityCue,
-                                {backgroundColor: colors[toxicityLevel]}
-                            ]}/>
-
-                            {/* label containing current ingredient toxicity */}
-                            {toxicityLevel === activeIngredient.toxicity &&
-                                <AppText style={[styles.toxicityCueText, {color: colors[toxicityLevel]}]}>
-                                    { toxicityLevel } {(toxicityLevel !== 'conditional') && (toxicityLevel !== 'safe') && "toxicity"}
-                                </AppText>                                    
-                            }
-                        </View>
-                    )}
-                </View>
-
-                {/* information */}
-                <ScrollView bounces={false} contentContainerStyle={styles.modalTextWrapper}>
-                    <AppText>
-                        {activeIngredient.description}
-                    </AppText>
-                </ScrollView>
-            </View>
-        );
-    }
-
-    const renderUnknownModal = () => {
-        return (
-            <View style={styles.modal}>
-
-                {/* header */}
-                <View style={[styles.modalHeader, {backgroundColor: colors.unknown}]}>
-                    {/* close button */}
-                    <TouchableOpacity style={styles.modalExit} onPress={() => setUnknownModalVisible(false)}>
-                        <MaterialCommunityIcons color={colors.light} name="close" size={25} />
-                    </TouchableOpacity>
-
-                    {/* label */}
-                    <AppText style={styles.modalHeaderText} numberOfLines={2} weight={500}>
-                        { activeIngredient.name }
-                    </AppText>
-                </View>
-
-                {/* information */}
-                <ScrollView bounces={false} contentContainerStyle={[styles.modalTextWrapper, {paddingTop: 19}]}>
-                    <AppText>
-                        We don't know the toxicity level of this ingredient. Apologies!
-                    </AppText>
-                </ScrollView>
-            </View>
-        );
+            {!activeIngredient.description &&
+                activeIngredient.toxicity === 'safe' &&
+                <AppText>
+                    This ingredient is safe for dogs.
+                </AppText>
+            }
+            </>
+        )
     }
 
     const renderPickerModal = () => {
@@ -428,50 +343,48 @@ function AnalysisScreen() {
                 backdropOpacity={0.55}
                 isVisible={isLoading}
             >
-                { renderLoadingModal() }
+                <View style={[styles.modal, {height: 120, justifyContent: 'center'}]}>
+                    <AppText style={styles.loadingText}>Extracting Text...</AppText>
+                    <Pulse size={30} color={colors.primary} />
+                </View>
             </ReactNativeModal>
 
             {/* allergy modal */}
-            {activeIngredient && 
-                <ReactNativeModal
-                    animationIn={'fadeInUp'}
-                    animationOut={'fadeOutDown'}
-                    backdropColor={colors.allergy}
-                    backdropOpacity={0.55}
+            {activeIngredient &&
+                <AnalysisModal
+                    activeIngredient={activeIngredient}
+                    color={colors.allergy}
                     isVisible={allergyModalVisible}
-                    onBackdropPress={() => setAllergyModalVisible(false)}
+                    onClose={() => setAllergyModalVisible(false)}
                 >
-                    { renderAllergyModal() }
-                </ReactNativeModal>
+                    { renderAllergyContent() }
+                </AnalysisModal>
             }
 
             {/* information modal */}
-            {activeIngredient && 
-                <ReactNativeModal
-                    animationIn={'fadeInUp'}
-                    animationOut={'fadeOutDown'}
-                    backdropColor={colors[activeIngredient.toxicity]}
-                    backdropOpacity={0.55}
+            {activeIngredient &&
+                <AnalysisModal
+                    activeIngredient={activeIngredient}
                     isVisible={informationModalVisible}
-                    onBackdropPress={() => setInformationModalVisible(false)}
+                    showToxicityBar={true}
+                    onClose={() => setInformationModalVisible(false)}
                 >
-                    { renderInformationModal() }
-                </ReactNativeModal>
+                    { renderInformationConent() }
+                </AnalysisModal>
             }
 
             {/* unkown modal */}
             {activeIngredient &&
-                <ReactNativeModal
-                    animationIn={'fadeInUp'}
-                    animationOut={'fadeOutDown'}
-                    backdropColor={colors.unknown}
-                    backdropOpacity={0.55}
+                <AnalysisModal
+                    activeIngredient={activeIngredient}
                     isVisible={unknownModalVisible}
-                    onBackdropPress={() => setUnknownModalVisible(false)}
+                    onClose={() => setUnknownModalVisible(false)}
                 >
-                    { renderUnknownModal() }
-                </ReactNativeModal>
-            } 
+                    <AppText>
+                        We don't know the toxicity level of this ingredient. Apologies!
+                    </AppText>
+                </AnalysisModal>
+            }
 
             {/* picker modal */}
             <ReactNativeModal
@@ -558,31 +471,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 'auto',
         marginBottom: 80
     },
-    modalExit: {
-        position: 'absolute', 
-        right: 15
-    },
-    modalHeader: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        paddingVertical: 15,
-        width: '100%',
-    },
-    modalHeaderText: {
-        color: colors.light,
-        fontSize: 20,
-        textTransform: 'capitalize',
-        textAlign: 'center',
-        width: '69.8%'
-    },
-    modalTextWrapper: {
-        paddingBottom: 20,
-        paddingHorizontal: 25,
-        paddingTop: 15,
-        flexShrink: 1,
-        width: '100%'
-    },
     pickerSelect: {
         borderRadius: 50,
         backgroundColor: colors.shade,
@@ -638,37 +526,6 @@ const styles = StyleSheet.create({
     },
     screenStyle: {
         paddingHorizontal: 30
-    },
-    toxicityCue: {
-        borderRadius: 9.5,
-        height: 19,
-        marginRight: 7,
-        width: 19,
-    },
-    toxicityCueActive: {
-        borderColor: colors.text,
-        borderRadius: 11,
-        borderWidth: 3,
-        height: 22,
-        marginRight: 7,
-        width: 22,
-    },
-    toxicityCueText: {
-        fontSize: 15, 
-        marginLeft: 3,
-        marginRight: 13,
-        textTransform: 'capitalize'
-    },
-    toxicityRow: {
-        alignItems: 'center',
-        flexDirection: 'row', 
-        marginTop: 15,
-        paddingHorizontal: 17,
-        width: '100%'
-    },
-    toxicitySubRow: {
-        alignItems: 'center', 
-        flexDirection: 'row'
     }
 })
 

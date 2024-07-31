@@ -7,3 +7,4 @@ export {default as Icon} from "./Icon";
 export {default as Menu} from "./Menu";
 export {default as Screen} from "./Screen";
 export {default as SubmitButton} from "./SubmitButton";
+export {default as AnalysisModal} from "./AnalysisModal"
